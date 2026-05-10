@@ -174,27 +174,33 @@
     font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5;
   }
   .tip-why strong { color: #fbbf24; }
+  /* YouTube input + preview */
+  .tip-yt-editor {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .tip-yt-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'Rubik', sans-serif;
+    font-size: 0.78rem; padding: 8px 10px; direction: ltr; min-width: 0;
+  }
+  .tip-yt-input:focus { outline: none; border-color: #ef4444; }
+  .tip-yt-input::placeholder { color: var(--text-dim); direction: rtl; text-align: right; }
+  .tip-yt-save {
+    flex-shrink: 0; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    color: #ef4444; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+    font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 0.78rem;
+  }
+  .tip-yt-save:hover { background: rgba(239,68,68,0.28); }
   .tip-youtube-thumb {
-    display: block; position: relative; border-radius: 10px; overflow: hidden;
-    margin-bottom: 12px; text-decoration: none; cursor: pointer;
+    display: block; border-radius: 10px; overflow: hidden;
+    margin-bottom: 10px; text-decoration: none; cursor: pointer;
     border: 1px solid rgba(239,68,68,0.3);
   }
-  .tip-youtube-thumb img {
-    width: 100%; height: auto; display: block;
-    border-radius: 10px 10px 0 0;
-  }
+  .tip-youtube-thumb img { width: 100%; height: auto; display: block; }
   .tip-youtube-play {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     background: rgba(239,68,68,0.85); color: #fff;
     padding: 9px 12px; font-weight: 700; font-size: 0.82rem;
-    border-radius: 0 0 10px 10px;
-  }
-  .tip-yt-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
-    color: #ef4444; border-radius: 20px; padding: 8px 16px;
-    font-size: 0.82rem; font-weight: 700; text-decoration: none;
-    margin-bottom: 10px; cursor: pointer;
   }
   .tip-coach {
     background: rgba(59,130,246,0.08); border-right: 3px solid #3b82f6;
@@ -1141,18 +1147,24 @@ function renderExercises(num) {
       ? `<ol class="tip-howto">${tipData.howto.map((s,i) =>
           `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>`
       : '';
-    const youtubeHTML = (tipData && tipData.youtube) ? (() => {
-      const vid = tipData.youtube.match(/[?&]v=([^&]+)/)?.[1];
-      if (!vid) return '';
-      const url = tipData.youtube;
-      return `<a class="tip-youtube-thumb" id="ytlink-${ex.id}" href="${url}"
-          onclick="event.preventDefault();window.open('${url}','_blank')">
-          <img src="https://img.youtube.com/vi/${vid}/maxresdefault.jpg"
-               alt="הדרכה ב-YouTube"
-               onerror="ytThumbFallback(this,'${vid}','${url}')">
-          <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
-        </a>`;
-    })() : '';
+    // YouTube editor — user pastes their own link
+    const _tk = ex.tipKey || '';
+    const _savedUrl = ytUrls[_tk] || (tipData ? tipData.youtube||'' : '');
+    const _vid = _savedUrl ? extractYtId(_savedUrl) : null;
+    const _thumbHTML = _vid
+      ? `<a class="tip-youtube-thumb" href="https://www.youtube.com/watch?v=${_vid}"
+             onclick="event.preventDefault();window.open('https://www.youtube.com/watch?v=${_vid}','_blank')">
+           <img src="https://img.youtube.com/vi/${_vid}/maxresdefault.jpg"
+                onerror="ytThumbFallback(this,'${_vid}','https://www.youtube.com/watch?v=${_vid}')">
+           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
+         </a>` : '';
+    const youtubeHTML = _tk ? `
+      <div class="tip-yt-editor">
+        <input type="url" class="tip-yt-input" id="ytinput-${_tk}"
+               placeholder="הדבק קישור YouTube..." value="${_savedUrl}">
+        <button class="tip-yt-save" onclick="saveYtUrl('${_tk}')">▶ הצג</button>
+      </div>
+      <div id="ytpreview-${_tk}">${_thumbHTML}</div>` : '';
     const tipPanel = tipData ? `
       <div class="tip-panel">
         <div class="tip-why"><strong>למה זה חשוב?</strong> ${tipData.why}</div>
@@ -1195,6 +1207,42 @@ function toggleCard(num, id) {
 
 function toggleTip(num, id) {
   document.getElementById('card-' + num + '-' + id)?.classList.toggle('tip-open');
+}
+
+// ========================
+// YOUTUBE URL STORAGE
+// ========================
+const YT_URLS_KEY = 'workout_yt_urls_v1';
+let ytUrls = (() => {
+  try { return JSON.parse(localStorage.getItem(YT_URLS_KEY)) || {}; } catch(e) { return {}; }
+})();
+
+function extractYtId(url) {
+  return url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
+}
+
+function saveYtUrl(tipKey) {
+  const input = document.getElementById('ytinput-' + tipKey);
+  if (!input) return;
+  const raw = input.value.trim();
+  const vid = extractYtId(raw);
+  const url = vid ? 'https://www.youtube.com/watch?v=' + vid : '';
+  if (raw && !vid) { showToast('⚠️ קישור לא תקין — נסה שוב'); return; }
+  ytUrls[tipKey] = url;
+  localStorage.setItem(YT_URLS_KEY, JSON.stringify(ytUrls));
+  // Update preview in place
+  const preview = document.getElementById('ytpreview-' + tipKey);
+  if (preview) {
+    preview.innerHTML = vid
+      ? `<a class="tip-youtube-thumb" href="${url}"
+             onclick="event.preventDefault();window.open('${url}','_blank')">
+           <img src="https://img.youtube.com/vi/${vid}/maxresdefault.jpg"
+                onerror="ytThumbFallback(this,'${vid}','${url}')">
+           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
+         </a>` : '';
+  }
+  input.value = url;
+  showToast(vid ? '🎬 קישור נשמר!' : '🗑️ קישור נמחק');
 }
 
 function ytThumbFallback(img, vid, url) {
