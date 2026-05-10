@@ -189,6 +189,13 @@
     padding: 9px 12px; font-weight: 700; font-size: 0.82rem;
     border-radius: 0 0 10px 10px;
   }
+  .tip-yt-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    color: #ef4444; border-radius: 20px; padding: 8px 16px;
+    font-size: 0.82rem; font-weight: 700; text-decoration: none;
+    margin-bottom: 10px; cursor: pointer;
+  }
   .tip-coach {
     background: rgba(59,130,246,0.08); border-right: 3px solid #3b82f6;
     border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 0.8rem;
@@ -1137,11 +1144,12 @@ function renderExercises(num) {
     const youtubeHTML = (tipData && tipData.youtube) ? (() => {
       const vid = tipData.youtube.match(/[?&]v=([^&]+)/)?.[1];
       if (!vid) return '';
-      return `<a class="tip-youtube-thumb" href="${tipData.youtube}"
-          onclick="event.preventDefault();window.open('${tipData.youtube}','_blank')">
-          <img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg"
+      const url = tipData.youtube;
+      return `<a class="tip-youtube-thumb" id="ytlink-${ex.id}" href="${url}"
+          onclick="event.preventDefault();window.open('${url}','_blank')">
+          <img src="https://img.youtube.com/vi/${vid}/maxresdefault.jpg"
                alt="הדרכה ב-YouTube"
-               onerror="this.parentElement.style.display='none'">
+               onerror="ytThumbFallback(this,'${vid}','${url}')">
           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
         </a>`;
     })() : '';
@@ -1187,6 +1195,22 @@ function toggleCard(num, id) {
 
 function toggleTip(num, id) {
   document.getElementById('card-' + num + '-' + id)?.classList.toggle('tip-open');
+}
+
+function ytThumbFallback(img, vid, url) {
+  if (img.dataset.tried === 'hq') {
+    // Both maxres and hq failed → replace with text button
+    const a = img.closest('a');
+    if (a) {
+      a.outerHTML = `<a class="tip-yt-btn" href="${url}"
+        onclick="event.preventDefault();window.open('${url}','_blank')">
+        ▶&nbsp; צפה בהדרכה ב-YouTube</a>`;
+    }
+  } else {
+    // maxres failed → try hqdefault
+    img.dataset.tried = 'hq';
+    img.src = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+  }
 }
 
 function toggleSet(num, id, idx, btn) {
