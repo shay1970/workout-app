@@ -1717,9 +1717,16 @@ async function loadFromCloud() {
 
   try {
     // JSONP — עוקף CORS, עובד על מובייל בלי בעיות redirect
-    const cloudState = await _jsonpFetch(url);
+    let cloudState = await _jsonpFetch(url);
 
-    if (!cloudState || typeof cloudState !== 'object' || Object.keys(cloudState).length === 0) {
+    // תמיכה בפורמט ישן שה-Code.gs החזיר: { _v:N, data: '...' }
+    if (cloudState && typeof cloudState.data === 'string') {
+      try { cloudState = JSON.parse(cloudState.data); } catch(e2) { cloudState = {}; }
+    }
+
+    const hasData = cloudState && typeof cloudState === 'object' &&
+                    (cloudState.currentWeek || cloudState.workouts || cloudState.weeklyProgress);
+    if (!hasData) {
       showToast('⚠️ לא נמצאו נתונים בענן');
       return;
     }
