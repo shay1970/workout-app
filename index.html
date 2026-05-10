@@ -1621,14 +1621,19 @@ async function syncToCloud() {
   _setSyncBtnState('syncUpBtn', '⏳ שומר...', 'loading');
   document.getElementById('syncBtn').classList.add('syncing');
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+
   try {
-    // שימוש ב-no-cors כדי לעקוף מגבלות CORS של Apps Script
+    // no-cors: browser strips custom headers anyway, credentials:omit avoids auth-redirect
     await fetch(url, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      credentials: 'omit',
+      signal: ctrl.signal,
       body: JSON.stringify(state)
     });
+    clearTimeout(timer);
     localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
     _updateSyncStatus();
     document.getElementById('syncBtn').classList.remove('syncing');
@@ -1637,10 +1642,12 @@ async function syncToCloud() {
     showToast('☁️ נשמר בענן!');
     closeSyncModal();
   } catch(e) {
+    clearTimeout(timer);
     document.getElementById('syncBtn').classList.remove('syncing');
     document.getElementById('syncBtn').classList.add('error');
     setTimeout(() => document.getElementById('syncBtn').classList.remove('error'), 3000);
-    showToast('❌ שגיאת שמירה — בדוק כתובת');
+    const msg = e.name === 'AbortError' ? 'timeout — בדוק חיבור' : 'בדוק כתובת וחיבור';
+    showToast('❌ שגיאת שמירה — ' + msg);
   } finally {
     _setSyncBtnState('syncUpBtn', '⬆️ שמור לענן', '');
   }
@@ -1653,8 +1660,17 @@ async function loadFromCloud() {
 
   _setSyncBtnState('syncDownBtn', '⏳ טוען...', 'loading');
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+
   try {
-    const res = await fetch(url + '?nocache=' + Date.now());
+    // credentials:omit is critical on iOS cellular — prevents Google auth redirect
+    const res = await fetch(url + '?nocache=' + Date.now(), {
+      signal: ctrl.signal,
+      credentials: 'omit',
+      cache: 'no-store'
+    });
+    clearTimeout(timer);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     const cloudState = JSON.parse(text);
@@ -1678,7 +1694,9 @@ async function loadFromCloud() {
       closeSyncModal();
     }
   } catch(e) {
-    showToast('❌ שגיאת טעינה — ' + e.message);
+    clearTimeout(timer);
+    const msg = e.name === 'AbortError' ? 'timeout — בדוק חיבור רשת' : e.message;
+    showToast('❌ שגיאת טעינה — ' + msg);
   } finally {
     _setSyncBtnState('syncDownBtn', '⬇️ טען מהענן', '');
   }
