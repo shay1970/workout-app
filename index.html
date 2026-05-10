@@ -1212,10 +1212,17 @@ function toggleTip(num, id) {
 // ========================
 // YOUTUBE URL STORAGE
 // ========================
-const YT_URLS_KEY = 'workout_yt_urls_v1';
-let ytUrls = (() => {
-  try { return JSON.parse(localStorage.getItem(YT_URLS_KEY)) || {}; } catch(e) { return {}; }
-})();
+// ytUrls lives inside state so it syncs automatically to the cloud
+// One-time migration: move old standalone key into state
+if (!state.ytUrls) {
+  try {
+    const old = JSON.parse(localStorage.getItem('workout_yt_urls_v1') || '{}');
+    state.ytUrls = old;
+    saveState();
+    localStorage.removeItem('workout_yt_urls_v1');
+  } catch(e) { state.ytUrls = {}; }
+}
+let ytUrls = state.ytUrls;
 
 function extractYtId(url) {
   return url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
@@ -1229,7 +1236,8 @@ function saveYtUrl(tipKey) {
   const url = vid ? 'https://www.youtube.com/watch?v=' + vid : '';
   if (raw && !vid) { showToast('⚠️ קישור לא תקין — נסה שוב'); return; }
   ytUrls[tipKey] = url;
-  localStorage.setItem(YT_URLS_KEY, JSON.stringify(ytUrls));
+  state.ytUrls = ytUrls;
+  saveState();
   // Update preview in place
   const preview = document.getElementById('ytpreview-' + tipKey);
   if (preview) {
@@ -1658,6 +1666,7 @@ async function loadFromCloud() {
 
     if (confirm('לטעון נתונים מהענן?\nהנתונים המקומיים יוחלפו בנתוני הענן.')) {
       state = cloudState;
+      ytUrls = state.ytUrls || (state.ytUrls = {});
       saveState();
       initTabs();
       switchToWorkout(currentWorkoutNum || 1);
