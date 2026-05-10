@@ -1609,6 +1609,25 @@ function _setSyncBtnState(id, text, cls) {
   btn.disabled = (cls === 'loading');
 }
 
+// מחזיר רק את הנתונים הדינמיים לסינכרון — ללא הגדרות תרגילים סטטיות (חוסך ~20KB)
+function _getCloudState() {
+  return {
+    currentWeek:    state.currentWeek,
+    workouts:       state.workouts       || {},
+    weeklyProgress: state.weeklyProgress || {},
+    ytUrls:         state.ytUrls         || {}
+  };
+}
+
+// ממזג נתוני ענן עם הגדרות תרגילים מחדש
+function _applyCloudState(cloud) {
+  state.currentWeek    = cloud.currentWeek    || state.currentWeek;
+  state.workouts       = cloud.workouts       || {};
+  state.weeklyProgress = cloud.weeklyProgress || {};
+  state.ytUrls         = cloud.ytUrls         || {};
+  ytUrls = state.ytUrls;
+}
+
 async function syncToCloud() {
   saveSyncUrl();
   const url = getSyncUrl();
@@ -1617,19 +1636,25 @@ async function syncToCloud() {
   _setSyncBtnState('syncUpBtn', '⏳ שומר...', 'loading');
   document.getElementById('syncBtn').classList.add('syncing');
 
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 20000);
-
   try {
-    // no-cors: browser strips custom headers anyway, credentials:omit avoids auth-redirect
-    await fetch(url, {
-      method: 'POST',
-      mode: 'no-cors',
-      credentials: 'omit',
-      signal: ctrl.signal,
-      body: JSON.stringify(state)
-    });
-    clearTimeout(timer);
+    // שמור רק נתונים דינמיים (ללא הגדרות תרגילים — חוסך ~20KB)
+    const json   = JSON.stringify(_getCloudState());
+    const CHUNK  = 1500; // תווים לנתח — בטוח לפרמטר URL
+    const chunks = [];
+    for (let i = 0; i < json.length; i += CHUNK) {
+      chunks.push(encodeURIComponent(json.slice(i, i + CHUNK)));
+    }
+    const n = chunks.length;
+
+    for (let i = 0; i < n; i++) {
+      _setSyncBtnState('syncUpBtn', `⏳ ${i + 1}/${n}...`, 'loading');
+      const chunkUrl = url + '?action=chunk&i=' + i + '&n=' + n + '&d=' + chunks[i];
+      const result   = await _jsonpFetch(chunkUrl, 30000);
+      if (!result || result.status === 'error') {
+        throw new Error(result ? result.msg : 'timeout בשמירת חלק ' + (i + 1));
+      }
+    }
+
     localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
     _updateSyncStatus();
     document.getElementById('syncBtn').classList.remove('syncing');
@@ -1638,12 +1663,10 @@ async function syncToCloud() {
     showToast('☁️ נשמר בענן!');
     closeSyncModal();
   } catch(e) {
-    clearTimeout(timer);
     document.getElementById('syncBtn').classList.remove('syncing');
     document.getElementById('syncBtn').classList.add('error');
     setTimeout(() => document.getElementById('syncBtn').classList.remove('error'), 3000);
-    const msg = e.name === 'AbortError' ? 'timeout — בדוק חיבור' : 'בדוק כתובת וחיבור';
-    showToast('❌ שגיאת שמירה — ' + msg);
+    showToast('❌ שגיאת שמירה — ' + e.message);
   } finally {
     _setSyncBtnState('syncUpBtn', '⬆️ שמור לענן', '');
   }
@@ -1700,8 +1723,7 @@ async function loadFromCloud() {
     }
 
     if (confirm('לטעון נתונים מהענן?\nהנתונים המקומיים יוחלפו בנתוני הענן.')) {
-      state = cloudState;
-      ytUrls = state.ytUrls || (state.ytUrls = {});
+      _applyCloudState(cloudState);
       saveState();
       initTabs();
       switchToWorkout(currentWorkoutNum || 1);
