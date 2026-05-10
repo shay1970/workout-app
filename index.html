@@ -77,8 +77,8 @@
   }
   .tab-btn:hover { color: var(--text); }
   .tab-btn.active { color: var(--text); border-bottom-color: var(--accent-a); }
-  .tab-btn.tab-b.active { border-bottom-color: var(--accent-b); }
   .tab-btn.tab-progress.active { border-bottom-color: var(--accent-warn); }
+  .tab-btn[data-workout-tab].active { border-bottom-color: var(--wcolor, var(--accent-a)); color: var(--wcolor, var(--text)); }
 
   /* CONTENT */
   .content { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
@@ -489,8 +489,8 @@
   </div>
   <div class="header-stats">
     <div class="stat-chip">שבוע <span id="currentWeekNum">1</span></div>
-    <div class="stat-chip">A: <span id="progressA">0%</span></div>
-    <div class="stat-chip">B: <span id="progressB">0%</span></div>
+    <div class="stat-chip">אימון <span id="currentWorkoutLabel">1</span></div>
+    <div class="stat-chip"><span id="progressCurrent">0%</span></div>
     <button class="sync-btn" id="syncBtn" onclick="showSyncModal()">
       <span class="sync-dot" id="syncDot"></span>☁️ סנכרן
     </button>
@@ -518,77 +518,30 @@
   </div>
 </div>
 
-<div class="tabs">
-  <button class="tab-btn active" data-tab="workout-a">🟦 אימון A</button>
-  <button class="tab-btn tab-b" data-tab="workout-b">🟩 אימון B</button>
-  <button class="tab-btn tab-progress" data-tab="progress">📊 התקדמות</button>
-  <button class="tab-btn" data-tab="history">📅 היסטוריה</button>
+<div class="tabs" id="mainTabs">
+  <button class="tab-btn tab-progress" data-special="progress">📊 התקדמות</button>
+  <button class="tab-btn" data-special="history">📅 היסטוריה</button>
 </div>
 
 <div class="content">
 
-<!-- WORKOUT A -->
-<div id="tab-workout-a" class="tab-panel active">
-  <div class="workout-header type-a">
-    <div>
-      <div class="workout-label">אימון A</div>
-      <div class="workout-title">חזה + רגליים 🦵</div>
-    </div>
-    <div class="workout-progress-ring">
-      <svg width="64" height="64" class="ring">
-        <circle cx="32" cy="32" r="26" fill="none" stroke="#2a2a3e" stroke-width="6"/>
-        <circle cx="32" cy="32" r="26" fill="none" stroke="#3b82f6" stroke-width="6"
-          stroke-dasharray="163.4" stroke-dashoffset="163.4" id="ringA" stroke-linecap="round"/>
-      </svg>
-      <div class="ring-text" id="ringTextA">0%</div>
-    </div>
-  </div>
-  <div id="exercises-a"></div>
+<!-- ACTIVE WORKOUT — rendered dynamically by JS -->
+<div id="tab-workout-active" class="tab-panel active">
+  <div id="activeWorkoutHeader"></div>
+  <div id="exercises-active"></div>
   <div class="add-exercise-section">
-    <div class="add-exercise-title">➕ הוסף תרגיל לאימון A</div>
+    <div class="add-exercise-title">➕ הוסף תרגיל</div>
     <div class="add-form">
-      <input type="text" id="addNameA" placeholder="שם תרגיל">
-      <select id="addGroupA">
-        <option value="">קבוצת שריר</option>
-        <option>חזה</option><option>רגליים</option><option>טריצפס</option>
-        <option>בטן</option><option>קרדיו</option>
+      <input type="text" id="addNameActive" placeholder="שם תרגיל">
+      <select id="addGroupActive">
+        <option value="">קטגוריה</option>
+        <option>כוח</option><option>ניפוח</option>
+        <option>ידיים/כתפיים</option><option>רגליים/גב</option>
+        <option>ליבה ואירובי</option>
       </select>
-      <input type="text" id="addWeightA" placeholder="משקל (ק״ג)">
-      <input type="text" id="addSetsA" placeholder="סטים × חזרות">
-      <button class="btn-add" onclick="addExercise('a')">+ הוסף תרגיל</button>
-    </div>
-  </div>
-</div>
-
-<!-- WORKOUT B -->
-<div id="tab-workout-b" class="tab-panel">
-  <div class="workout-header type-b">
-    <div>
-      <div class="workout-label">אימון B</div>
-      <div class="workout-title">גב + כתפיים + ידיים 💪</div>
-    </div>
-    <div class="workout-progress-ring">
-      <svg width="64" height="64" class="ring">
-        <circle cx="32" cy="32" r="26" fill="none" stroke="#2a2a3e" stroke-width="6"/>
-        <circle cx="32" cy="32" r="26" fill="none" stroke="#22c55e" stroke-width="6"
-          stroke-dasharray="163.4" stroke-dashoffset="163.4" id="ringB" stroke-linecap="round"/>
-      </svg>
-      <div class="ring-text" id="ringTextB">0%</div>
-    </div>
-  </div>
-  <div id="exercises-b"></div>
-  <div class="add-exercise-section">
-    <div class="add-exercise-title">➕ הוסף תרגיל לאימון B</div>
-    <div class="add-form">
-      <input type="text" id="addNameB" placeholder="שם תרגיל">
-      <select id="addGroupB">
-        <option value="">קבוצת שריר</option>
-        <option>גב</option><option>כתפיים</option><option>ביצפס</option>
-        <option>טריצפס</option><option>רגליים</option><option>קרדיו</option>
-      </select>
-      <input type="text" id="addWeightB" placeholder="משקל (ק״ג)">
-      <input type="text" id="addSetsB" placeholder="סטים × חזרות">
-      <button class="btn-add" onclick="addExercise('b')">+ הוסף תרגיל</button>
+      <input type="text" id="addWeightActive" placeholder="משקל (ק״ג)">
+      <input type="text" id="addSetsActive" placeholder="סטים × חזרות">
+      <button class="btn-add" onclick="addExercise()">+ הוסף תרגיל</button>
     </div>
   </div>
 </div>
@@ -667,125 +620,210 @@ const IMG = {
 // ========================
 
 const DEFAULT_EXERCISES = {
-  a: [
-    { id:'angled_leg_press', name:'Angled Leg Press', emoji:'🦵', muscle:'רגליים',
-      weight:'20 כל צד', sets:3, reps:'10–12',
-      images:['angled_leg_press_1','angled_leg_press_2'] },
-    { id:'leg_curl', name:'Leg Curl', emoji:'🦵', muscle:'רגליים',
-      weight:'36', sets:3, reps:'10–12',
-      images:['leg_curl_1','leg_curl_2'] },
-    { id:'chest_press', name:'Chest Press', emoji:'🧱', muscle:'חזה',
-      weight:'20 כל צד', sets:3, reps:'10–12',
-      images:['chest_press_1','chest_press_2'] },
-    { id:'triceps_pushdown', name:'Triceps Pushdown (חבל)', emoji:'💪', muscle:'טריצפס',
-      weight:'32', sets:3, reps:'10–12',
-      images:['triceps_pushdown_1','triceps_pushdown_2'] },
-    { id:'abs_walk_a', name:'בטן + הליכה', emoji:'🧠', muscle:'בטן/קרדיו',
-      weight:'—', sets:1, reps:'15–20 דק׳',
-      images:[] },
+  1: [
+    { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
+    { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true  },
   ],
-  b: [
-    { id:'leg_extension', name:'Leg Extension', emoji:'🦵', muscle:'רגליים',
-      weight:'15', sets:3, reps:'10–12',
-      images:['leg_extension_1','leg_extension_2'] },
-    { id:'leg_press', name:'Leg Press (רגיל)', emoji:'🦵', muscle:'רגליים',
-      weight:'60', sets:3, reps:'10–12',
-      images:['leg_press_1','leg_press_2'] },
-    { id:'shoulder_press', name:'Shoulder Press', emoji:'🧱', muscle:'כתפיים',
-      weight:'14–16', sets:3, reps:'10–12',
-      images:['shoulder_press_1','shoulder_press_2'] },
-    { id:'biceps_curl', name:'Biceps Curl', emoji:'💪', muscle:'ביצפס',
-      weight:'20', sets:3, reps:'10–12',
-      images:['biceps_curl_1','biceps_curl_2'] },
-    { id:'assisted_dips', name:'Assisted Dips', emoji:'💥', muscle:'טריצפס/חזה',
-      weight:'50–54', sets:3, reps:'8–10',
-      images:['assisted_dips_1','assisted_dips_2'] },
-    { id:'walk_b', name:'הליכה', emoji:'🚶‍♂️', muscle:'קרדיו',
-      weight:'—', sets:1, reps:'15–25 דק׳',
-      images:[] },
-  ]
+  2: [
+    { id:'w2_1', name:'חתירה במכונה',             emoji:'🔙', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false },
+    { id:'w2_3', name:'כפיפת מרפקים במוט W',     emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'10–12',     cardio:false },
+    { id:'w2_4', name:'פשיטת מרפקים בחבל',       emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'10–12',     cardio:false },
+    { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+  ],
+  3: [
+    { id:'w3_1', name:'Leg Press (הרגיל)',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w3_2', name:'Leg Extension',            emoji:'🦵', muscle:'רגליים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w3_3', name:'Face Pulls (כתף אחורית)', emoji:'🎯', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w3_4', name:'Leg Curl',                 emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w3_5', name:'הליכה מהירה 20 דק׳',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+  ],
+  4: [
+    { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false },
+    { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w4_5', name:'הליכה בשיפוע 6%',        emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+  ],
+  5: [
+    { id:'w5_1', name:'פשיטת מרפקים מעבר לראש', emoji:'💥', muscle:'טריצפס',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_2', name:'כפיפת מרפקים (Hammer)',  emoji:'💪', muscle:'ביצפס',   category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_3', name:'לחיצת כתפיים במכונה',   emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_4', name:'פולי עליון (גב)',         emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_5', name:'בטן "אופניים"',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',        cardio:true  },
+  ],
+  6: [
+    { id:'w6_1', name:'Angled Leg Press',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w6_2', name:'Chest Press',             emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w6_3', name:'Shoulder Press',          emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w6_4', name:'חתירה בישיבה במכונה',   emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w6_5', name:'פלאנק צידי',             emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true  },
+  ],
+  7: [
+    { id:'w7_1', name:'לחיצת חזה משקולות',      emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w7_2', name:'לחיצת כתפיים בישיבה',   emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
+    { id:'w7_3', name:'כפיפת מרפקים בישיבה',   emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w7_4', name:'מכרעים (Lunges) סטטיים', emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w7_5', name:'הליכה מהירה',            emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+  ],
+  8: [
+    { id:'w8_1', name:'פולי עליון רחב',         emoji:'🔝', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_2', name:'לחיצת חזה בשיפוע',      emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_3', name:'פרפר במכונה (Pec Deck)', emoji:'🦋', muscle:'חזה',     category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_4', name:'פולי תחתון (חתירה)',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_5', name:'Dead-Bug לבטן',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+  ],
+  9: [
+    { id:'w9_1', name:'הרחקת זרועות (דאמבלים)', emoji:'💪', muscle:'כתפיים',  category:'כוח',           weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w9_2', name:'לחיצת ארנולד (כתפיים)', emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w9_3', name:'כפיפת מרפקים בכבלים',  emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w9_4', name:'פשיטת מרפקים במוט ישר', emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w9_5', name:'הליכה (אינטרוולים)',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+  ],
+  10: [
+    { id:'w10_1', name:'Assisted Dips',          emoji:'💥', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false },
+    { id:'w10_2', name:'חתירה במכונה',           emoji:'🔙', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w10_3', name:'פשיטת מרפקים בחבל',     emoji:'💥', muscle:'טריצפס',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w10_4', name:'Leg Press',              emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w10_5', name:'הליכה מאומצת 25 דק׳',  emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'25 דק׳',   cardio:true  },
+  ],
 };
+
+// ========================
+// META
+// ========================
+const WORKOUT_META = [
+  { num:1,  name:'חזה וכתפיים Classic',   color:'#3b82f6', emoji:'🏋️' },
+  { num:2,  name:'משיכה וזרועות',          color:'#22c55e', emoji:'🔙' },
+  { num:3,  name:'רגליים וכתף אחורית',    color:'#f59e0b', emoji:'🦵' },
+  { num:4,  name:'Upper Body Power',       color:'#3b82f6', emoji:'⚡' },
+  { num:5,  name:'נפח זרועות (Arms Day)', color:'#a855f7', emoji:'💪' },
+  { num:6,  name:'Full Body Machine',      color:'#14b8a6', emoji:'🔧' },
+  { num:7,  name:'משקולות חופשיות',        color:'#f97316', emoji:'🏋️' },
+  { num:8,  name:'גב וחזה (V-Shape)',       color:'#22c55e', emoji:'🎯' },
+  { num:9,  name:'כתפיים וידיים ממוקד',   color:'#a855f7', emoji:'🎯' },
+  { num:10, name:'סיכום שבוע – Mixed',    color:'#14b8a6', emoji:'🌟' },
+];
+
+const CAT_COLORS = {
+  'כוח':           { bg:'rgba(59,130,246,0.15)',  color:'#3b82f6', border:'rgba(59,130,246,0.3)'  },
+  'ניפוח':         { bg:'rgba(168,85,247,0.15)',  color:'#a855f7', border:'rgba(168,85,247,0.3)'  },
+  'ידיים/כתפיים':  { bg:'rgba(245,158,11,0.15)',  color:'#f59e0b', border:'rgba(245,158,11,0.3)'  },
+  'רגליים/גב':     { bg:'rgba(34,197,94,0.15)',   color:'#22c55e', border:'rgba(34,197,94,0.3)'   },
+  'ליבה ואירובי':  { bg:'rgba(20,184,166,0.15)',  color:'#14b8a6', border:'rgba(20,184,166,0.3)'  },
+};
+
+let currentWorkoutNum = 1;
 
 // State
 let state = loadState();
 
 function loadState() {
   try {
-    const s = localStorage.getItem('workout_shai_v2');
+    const s = localStorage.getItem('workout_shai_v3');
     if (s) return JSON.parse(s);
   } catch(e) {}
   return {
     exercises: JSON.parse(JSON.stringify(DEFAULT_EXERCISES)),
-    workouts: { a: {}, b: {} }, // keyed by date
+    workouts: {},
     currentWeek: 1,
-    weeklyProgress: {}
+    weeklyProgress: {},
+    history: []
   };
 }
 
 function saveState() {
-  localStorage.setItem('workout_shai_v2', JSON.stringify(state));
+  localStorage.setItem('workout_shai_v3', JSON.stringify(state));
 }
 
 function getTodayKey() {
   return new Date().toISOString().slice(0,10);
 }
 
-// Get or init today's workout data
-function getTodayWorkout(type) {
+function getTodayWorkout(num) {
   const k = getTodayKey();
-  if (!state.workouts[type][k]) {
-    state.workouts[type][k] = {
-      sets: {}, notes: {}, cardio: { duration: '', done: false }
-    };
-    state.exercises[type].forEach(ex => {
-      state.workouts[type][k].sets[ex.id] = Array.from({length: ex.sets}, () => ({ reps: ex.reps.split('–')[1] || ex.reps, weight: ex.weight, done: false }));
-      state.workouts[type][k].notes[ex.id] = '';
+  if (!state.workouts[num]) state.workouts[num] = {};
+  if (!state.workouts[num][k]) {
+    state.workouts[num][k] = { sets: {}, notes: {}, cardio: {} };
+    (state.exercises[num] || []).forEach(ex => {
+      if (!ex.cardio) {
+        state.workouts[num][k].sets[ex.id] = Array.from({length: ex.sets}, () => ({
+          reps: ex.reps, weight: ex.weight || '', done: false
+        }));
+      }
+      state.workouts[num][k].notes[ex.id] = '';
     });
   }
-  return state.workouts[type][k];
+  return state.workouts[num][k];
 }
 
 // ========================
 // RENDER
 // ========================
 
-function renderExercises(type) {
-  const container = document.getElementById('exercises-' + type);
-  const workout = getTodayWorkout(type);
+function renderExercises(num) {
+  const container = document.getElementById('exercises-active');
+  const workout = getTodayWorkout(num);
+  const meta = WORKOUT_META.find(w => w.num === num);
   container.innerHTML = '';
-  
-  state.exercises[type].forEach(ex => {
+
+  // Render workout header
+  const headerContainer = document.getElementById('activeWorkoutHeader');
+  headerContainer.innerHTML = `
+    <div class="workout-header" style="background:linear-gradient(135deg,${meta.color}22 0%,${meta.color}08 100%);border:1px solid ${meta.color}44;margin-bottom:20px;border-radius:var(--radius);padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="workout-label">אימון ${num} מתוך 10</div>
+        <div class="workout-title">${meta.emoji} ${meta.name}</div>
+      </div>
+      <div class="workout-progress-ring">
+        <svg width="64" height="64" class="ring">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#2a2a3e" stroke-width="6"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke="${meta.color}" stroke-width="6"
+            stroke-dasharray="163.4" stroke-dashoffset="163.4" id="ringActive" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-text" id="ringTextActive">0%</div>
+      </div>
+    </div>`;
+
+  (state.exercises[num] || []).forEach(ex => {
+    const isCardio = ex.cardio;
     const sets = workout.sets[ex.id] || [];
     const doneCount = sets.filter(s => s.done).length;
-    const allDone = doneCount === sets.length && sets.length > 0;
+    const allDone = sets.length > 0 && doneCount === sets.length;
     const partialDone = doneCount > 0 && !allDone;
 
     let badgeClass = 'badge-none', badgeText = 'לא התחלת';
     if (allDone) { badgeClass = 'badge-done'; badgeText = '✓ הושלם'; }
     else if (partialDone) { badgeClass = 'badge-partial'; badgeText = doneCount + '/' + sets.length + ' סטים'; }
 
+    const cat = CAT_COLORS[ex.category] || {};
+    const catStyle = cat.bg ? `background:${cat.bg};color:${cat.color};border:1px solid ${cat.border}` : '';
+
     const card = document.createElement('div');
     card.className = 'exercise-card' + (allDone ? ' completed' : '');
-    card.id = 'card-' + type + '-' + ex.id;
+    card.id = 'card-' + num + '-' + ex.id;
 
-    const imgSrc = ex.images[0] ? IMG[ex.images[0]] : '';
-    const img2Src = ex.images[1] ? IMG[ex.images[1]] : '';
+    const imgSrc = '';
+    const img2Src = '';
 
     let setsHTML = '';
-    if (ex.id.includes('walk') || ex.id.includes('abs')) {
-      const cd = workout.cardio || { duration: '', done: false };
+    if (isCardio) {
+      const cardioData = workout.cardio || {};
       setsHTML = `
         <div class="cardio-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
           <div class="cardio-title">${ex.emoji} ${ex.name}</div>
           <div class="cardio-row">
             <span style="color:var(--text-dim);font-size:0.85rem">משך:</span>
-            <input type="number" class="duration-input" placeholder="דק׳" 
-              value="${workout.cardio ? workout.cardio[ex.id+'_dur'] || '' : ''}"
-              oninput="setCardio('${type}','${ex.id}','dur',this.value)">
+            <input type="number" class="duration-input" placeholder="דק׳"
+              value="${cardioData[ex.id+'_dur'] || ''}"
+              oninput="setCardio(${num},'${ex.id}','dur',this.value)">
             <span style="color:var(--text-dim);font-size:0.85rem">דקות</span>
-            <button class="cardio-done-btn ${workout.cardio && workout.cardio[ex.id+'_done'] ? 'done' : ''}"
-              onclick="setCardio('${type}','${ex.id}','done',null,this)">
-              ${workout.cardio && workout.cardio[ex.id+'_done'] ? '✓ בוצע!' : 'סמן בוצע'}
+            <button class="cardio-done-btn ${cardioData[ex.id+'_done'] ? 'done' : ''}"
+              onclick="setCardio(${num},'${ex.id}','done',null,this)">
+              ${cardioData[ex.id+'_done'] ? '✓ בוצע!' : 'סמן בוצע'}
             </button>
           </div>
         </div>`;
@@ -793,21 +831,21 @@ function renderExercises(type) {
       setsHTML = `<div class="sets-label">סטים</div><div class="sets-grid">`;
       sets.forEach((s, i) => {
         setsHTML += `
-          <div class="set-row ${s.done ? 'set-done' : ''}" id="setrow-${type}-${ex.id}-${i}">
+          <div class="set-row ${s.done ? 'set-done' : ''}" id="setrow-${num}-${ex.id}-${i}">
             <div class="set-number">${i+1}</div>
             <div class="set-fields">
               <div class="field-group">
                 <div class="field-label">משקל</div>
-                <input type="text" class="field-input" value="${s.weight}" 
-                  oninput="updateSet('${type}','${ex.id}',${i},'weight',this.value)" placeholder="ק״ג">
+                <input type="text" class="field-input" value="${s.weight}"
+                  oninput="updateSet(${num},'${ex.id}',${i},'weight',this.value)" placeholder="ק״ג">
               </div>
               <div class="field-group">
                 <div class="field-label">חזרות</div>
-                <input type="number" class="field-input" value="${s.reps}" 
-                  oninput="updateSet('${type}','${ex.id}',${i},'reps',this.value)" placeholder="חז׳">
+                <input type="number" class="field-input" value="${s.reps}"
+                  oninput="updateSet(${num},'${ex.id}',${i},'reps',this.value)" placeholder="חז׳">
               </div>
             </div>
-            <button class="set-check ${s.done ? 'checked' : ''}" onclick="toggleSet('${type}','${ex.id}',${i},this)">
+            <button class="set-check ${s.done ? 'checked' : ''}" onclick="toggleSet(${num},'${ex.id}',${i},this)">
               ${s.done ? '✓' : ''}
             </button>
           </div>`;
@@ -815,30 +853,24 @@ function renderExercises(type) {
       setsHTML += '</div>';
     }
 
-    let imagesHTML = '';
-    if (imgSrc || img2Src) {
-      imagesHTML = '<div class="images-strip">';
-      if (imgSrc) imagesHTML += `<img src="${imgSrc}" alt="${ex.name}">`;
-      if (img2Src) imagesHTML += `<img src="${img2Src}" alt="${ex.name} 2">`;
-      imagesHTML += '</div>';
-    }
-
     card.innerHTML = `
-      <div class="exercise-header" onclick="toggleCard('${type}','${ex.id}')">
-        ${imgSrc ? `<img class="exercise-thumb" src="${imgSrc}" alt="${ex.name}">` : `<div style="width:70px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">${ex.emoji}</div>`}
+      <div class="exercise-header" onclick="toggleCard(${num},'${ex.id}')">
+        <div style="width:70px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">${ex.emoji}</div>
         <div class="exercise-info">
-          <div class="exercise-name">${ex.emoji} ${ex.name}</div>
-          <div class="exercise-meta">${ex.muscle} · ${ex.weight} ק״ג · ${ex.sets}×${ex.reps}</div>
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-meta">
+            <span class="exercise-badge" style="font-size:0.68rem;padding:3px 8px;${catStyle}">${ex.category}</span>
+            ${!isCardio ? ` · ${ex.weight||'—'} ק״ג · ${ex.sets}×${ex.reps}` : ''}
+          </div>
         </div>
         <span class="exercise-badge ${badgeClass}">${badgeText}</span>
         <span class="expand-icon">⌄</span>
       </div>
       <div class="exercise-body">
-        ${imagesHTML}
         ${setsHTML}
         <div class="notes-area">
-          <textarea class="notes-input" placeholder="הערות לתרגיל הזה... (כאבים, קשיים, תחושות)"
-            oninput="updateNotes('${type}','${ex.id}',this.value)">${(workout.notes || {})[ex.id] || ''}</textarea>
+          <textarea class="notes-input" placeholder="הערות... (כאבים, קשיים, תחושות)"
+            oninput="updateNotes(${num},'${ex.id}',this.value)">${(workout.notes||{})[ex.id]||''}</textarea>
         </div>
       </div>`;
     container.appendChild(card);
@@ -847,125 +879,107 @@ function renderExercises(type) {
   updateRings();
 }
 
-function toggleCard(type, id) {
-  const card = document.getElementById('card-' + type + '-' + id);
-  card.classList.toggle('open');
+function toggleCard(num, id) {
+  document.getElementById('card-' + num + '-' + id)?.classList.toggle('open');
 }
 
-function toggleSet(type, id, idx, btn) {
-  const workout = getTodayWorkout(type);
+function toggleSet(num, id, idx, btn) {
+  const workout = getTodayWorkout(num);
   const s = workout.sets[id][idx];
   s.done = !s.done;
   btn.classList.toggle('checked');
   btn.textContent = s.done ? '✓' : '';
-  const row = document.getElementById('setrow-' + type + '-' + id + '-' + idx);
-  row.classList.toggle('set-done', s.done);
-  
-  // Update badge
+  document.getElementById('setrow-' + num + '-' + id + '-' + idx)?.classList.toggle('set-done', s.done);
   const sets = workout.sets[id];
   const doneCount = sets.filter(x => x.done).length;
-  const card = document.getElementById('card-' + type + '-' + id);
-  const badge = card.querySelector('.exercise-badge');
-  
-  if (doneCount === sets.length) {
-    badge.className = 'exercise-badge badge-done';
-    badge.textContent = '✓ הושלם';
-    card.classList.add('completed');
-  } else if (doneCount > 0) {
-    badge.className = 'exercise-badge badge-partial';
-    badge.textContent = doneCount + '/' + sets.length + ' סטים';
-    card.classList.remove('completed');
-  } else {
-    badge.className = 'exercise-badge badge-none';
-    badge.textContent = 'לא התחלת';
-    card.classList.remove('completed');
+  const card = document.getElementById('card-' + num + '-' + id);
+  const statusBadge = card?.querySelector('.exercise-header > .exercise-badge');
+  if (statusBadge) {
+    if (doneCount === sets.length) {
+      statusBadge.className = 'exercise-badge badge-done'; statusBadge.textContent = '✓ הושלם';
+      card.classList.add('completed');
+    } else if (doneCount > 0) {
+      statusBadge.className = 'exercise-badge badge-partial'; statusBadge.textContent = doneCount + '/' + sets.length + ' סטים';
+      card.classList.remove('completed');
+    } else {
+      statusBadge.className = 'exercise-badge badge-none'; statusBadge.textContent = 'לא התחלת';
+      card.classList.remove('completed');
+    }
   }
-  
   updateRings();
   saveState();
 }
 
-function updateSet(type, id, idx, field, val) {
-  const workout = getTodayWorkout(type);
-  workout.sets[id][idx][field] = val;
+function updateSet(num, id, idx, field, val) {
+  const workout = getTodayWorkout(num);
+  if (workout.sets[id]?.[idx]) workout.sets[id][idx][field] = val;
   saveState();
 }
 
-function updateNotes(type, id, val) {
-  const workout = getTodayWorkout(type);
+function updateNotes(num, id, val) {
+  const workout = getTodayWorkout(num);
   if (!workout.notes) workout.notes = {};
   workout.notes[id] = val;
   saveState();
 }
 
-function setCardio(type, id, field, val, btn) {
-  const workout = getTodayWorkout(type);
+function setCardio(num, id, field, val, btn) {
+  const workout = getTodayWorkout(num);
   if (!workout.cardio) workout.cardio = {};
   if (field === 'dur') {
     workout.cardio[id+'_dur'] = val;
   } else if (field === 'done') {
     workout.cardio[id+'_done'] = !workout.cardio[id+'_done'];
-    btn.classList.toggle('done');
-    btn.textContent = workout.cardio[id+'_done'] ? '✓ בוצע!' : 'סמן בוצע';
+    if (btn) { btn.classList.toggle('done'); btn.textContent = workout.cardio[id+'_done'] ? '✓ בוצע!' : 'סמן בוצע'; }
   }
   saveState();
   updateRings();
 }
 
 function updateRings() {
-  ['a','b'].forEach(type => {
-    const workout = getTodayWorkout(type);
-    let total = 0, done = 0;
-    state.exercises[type].forEach(ex => {
-      if (workout.sets[ex.id]) {
-        const sets = workout.sets[ex.id];
-        total += sets.length;
-        done += sets.filter(s => s.done).length;
-      }
-    });
-    const pct = total > 0 ? Math.round(done/total*100) : 0;
-    const circumference = 163.4;
-    const offset = circumference - (pct/100) * circumference;
-    const ring = document.getElementById('ring' + type.toUpperCase());
-    const text = document.getElementById('ringText' + type.toUpperCase());
-    if (ring) { ring.style.strokeDashoffset = offset; }
-    if (text) { text.textContent = pct + '%'; }
-    document.getElementById('progress' + type.toUpperCase()).textContent = pct + '%';
+  const num = currentWorkoutNum;
+  const workout = getTodayWorkout(num);
+  let total = 0, done = 0;
+  (state.exercises[num] || []).forEach(ex => {
+    if (!ex.cardio && workout.sets[ex.id]) {
+      total += workout.sets[ex.id].length;
+      done += workout.sets[ex.id].filter(s => s.done).length;
+    }
   });
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const offset = 163.4 * (1 - pct/100);
+  const ring = document.getElementById('ringActive');
+  const text = document.getElementById('ringTextActive');
+  if (ring) ring.style.strokeDashoffset = offset;
+  if (text) text.textContent = pct + '%';
+  const chip = document.getElementById('progressCurrent');
+  if (chip) chip.textContent = pct + '%';
 }
 
 // ========================
 // ADD EXERCISE
 // ========================
-function addExercise(type) {
-  const name = document.getElementById('addName'+type.toUpperCase()).value.trim();
-  const weight = document.getElementById('addWeight'+type.toUpperCase()).value.trim();
-  const setsReps = document.getElementById('addSets'+type.toUpperCase()).value.trim() || '3 × 10–12';
-  const group = document.getElementById('addGroup'+type.toUpperCase()).value;
-  
+function addExercise() {
+  const num = currentWorkoutNum;
+  const name = document.getElementById('addNameActive').value.trim();
+  const weight = document.getElementById('addWeightActive').value.trim();
+  const setsReps = document.getElementById('addSetsActive').value.trim() || '3 × 10–12';
+  const category = document.getElementById('addGroupActive').value || 'כוח';
   if (!name) { showToast('🚨 שכחת לרשום שם תרגיל'); return; }
-  
   const parts = setsReps.split(/[×x]/);
   const numSets = parseInt(parts[0]) || 3;
   const reps = (parts[1] || '10–12').trim();
   const id = 'custom_' + Date.now();
-  
-  const ex = { id, name, emoji:'⚡', muscle: group || 'כללי', weight: weight || '?', sets: numSets, reps, images: [] };
-  state.exercises[type].push(ex);
-  
-  const workout = getTodayWorkout(type);
-  workout.sets[id] = Array.from({length: numSets}, () => ({ reps, weight: weight || '', done: false }));
+  const ex = { id, name, emoji:'⚡', muscle:category, category, weight:weight||'?', sets:numSets, reps, images:[], cardio:false };
+  if (!state.exercises[num]) state.exercises[num] = [];
+  state.exercises[num].push(ex);
+  const workout = getTodayWorkout(num);
+  workout.sets[id] = Array.from({length:numSets}, () => ({ reps, weight:weight||'', done:false }));
   workout.notes[id] = '';
-  
   saveState();
-  renderExercises(type);
-  
-  // Clear form
-  ['addName','addWeight','addSets','addGroup'].forEach(f => {
-    const el = document.getElementById(f+type.toUpperCase());
-    if (el) el.value = '';
-  });
-  
+  renderExercises(num);
+  ['addNameActive','addWeightActive','addSetsActive'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+  document.getElementById('addGroupActive').value = '';
   showToast('✅ תרגיל נוסף: ' + name);
 }
 
@@ -973,46 +987,35 @@ function addExercise(type) {
 // SAVE & RESET
 // ========================
 function saveWorkout() {
-  const activeTab = document.querySelector('.tab-panel.active').id;
-  const type = activeTab.includes('-a') ? 'a' : (activeTab.includes('-b') ? 'b' : null);
-  
+  const num = currentWorkoutNum;
   saveState();
-  
-  // Save to history
-  if (type) {
-    const workout = getTodayWorkout(type);
-    const k = getTodayKey();
-    if (!state.history) state.history = [];
-    const existing = state.history.findIndex(h => h.date === k && h.type === type);
-    
-    const workout_obj = getTodayWorkout(type);
-    let totalSets = 0, doneSets = 0;
-    state.exercises[type].forEach(ex => {
-      if (workout_obj.sets[ex.id]) {
-        totalSets += workout_obj.sets[ex.id].length;
-        doneSets += workout_obj.sets[ex.id].filter(s => s.done).length;
-      }
-    });
-    
-    const entry = { date: k, type, doneSets, totalSets, label: 'אימון ' + type.toUpperCase() };
-    if (existing >= 0) state.history[existing] = entry;
-    else state.history.unshift(entry);
-    
-    saveState();
-    renderHistory();
-  }
-  
+  const workout = getTodayWorkout(num);
+  const k = getTodayKey();
+  if (!state.history) state.history = [];
+  const existing = state.history.findIndex(h => h.date === k && h.type === num);
+  let totalSets = 0, doneSets = 0;
+  (state.exercises[num] || []).forEach(ex => {
+    if (!ex.cardio && workout.sets[ex.id]) {
+      totalSets += workout.sets[ex.id].length;
+      doneSets += workout.sets[ex.id].filter(s => s.done).length;
+    }
+  });
+  const meta = WORKOUT_META.find(w => w.num === num);
+  const entry = { date:k, type:num, doneSets, totalSets, label:`אימון ${num} – ${meta?.name||''}` };
+  if (existing >= 0) state.history[existing] = entry;
+  else state.history.unshift(entry);
+  saveState();
+  renderHistory();
   showToast('💾 נשמר!');
 }
 
 function resetCurrentWorkout() {
   if (!confirm('לאפס את האימון של היום?')) return;
-  const activeTab = document.querySelector('.tab-panel.active').id;
-  const type = activeTab.includes('-a') ? 'a' : 'b';
+  const num = currentWorkoutNum;
   const k = getTodayKey();
-  delete state.workouts[type][k];
+  if (state.workouts[num]) delete state.workouts[num][k];
   saveState();
-  renderExercises(type);
+  renderExercises(num);
   showToast('🔄 אופס');
 }
 
@@ -1034,7 +1037,7 @@ function renderProgress() {
   // Table
   const tbody = document.getElementById('progressTableBody');
   tbody.innerHTML = '';
-  const allEx = [...state.exercises.a, ...state.exercises.b].filter(ex => !ex.id.includes('walk') && !ex.id.includes('abs'));
+  const allEx = Object.values(state.exercises).flat().filter(ex => !ex.cardio);
   
   const wk = state.currentWeek;
   if (!state.weeklyProgress) state.weeklyProgress = {};
@@ -1088,10 +1091,12 @@ function renderHistory() {
     const pct = h.totalSets > 0 ? Math.round(h.doneSets/h.totalSets*100) : 0;
     const d = new Date(h.date);
     const dateStr = d.toLocaleDateString('he-IL', { weekday:'short', day:'numeric', month:'numeric' });
-    const typeColor = h.type === 'a' ? '#3b82f6' : '#22c55e';
+    const meta = WORKOUT_META.find(w => w.num === h.type) || { color:'#6b7280', name:'' };
+    const typeColor = meta.color;
+    const wLabel = h.label || `אימון ${h.type} – ${meta.name}`;
     return `<div class="history-item">
       <div>
-        <span style="color:${typeColor};font-weight:700">אימון ${h.type.toUpperCase()}</span>
+        <span style="color:${typeColor};font-weight:700">${wLabel}</span>
         <div class="history-date">${dateStr}</div>
       </div>
       <div style="text-align:left">
@@ -1105,18 +1110,62 @@ function renderHistory() {
 // ========================
 // TABS
 // ========================
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    const panel = document.getElementById('tab-' + btn.dataset.tab);
-    if (panel) panel.classList.add('active');
-    
-    if (btn.dataset.tab === 'progress') renderProgress();
-    if (btn.dataset.tab === 'history') renderHistory();
+function initTabs() {
+  const tabsEl = document.getElementById('mainTabs');
+  // Remove any previously injected workout tabs
+  tabsEl.querySelectorAll('[data-workout-tab]').forEach(b => b.remove());
+
+  WORKOUT_META.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.dataset.workoutTab = w.num;
+    btn.innerHTML = `${w.emoji} ${w.num}`;
+    btn.title = w.name;
+    btn.style.setProperty('--wcolor', w.color);
+    btn.addEventListener('click', () => switchToWorkout(w.num));
+    tabsEl.appendChild(btn);
   });
-});
+
+  // Wire up static tabs (progress, history)
+  tabsEl.querySelectorAll('[data-special]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setActiveTab(btn);
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const sp = btn.dataset.special;
+      const panel = document.getElementById('tab-' + sp);
+      if (panel) panel.classList.add('active');
+      if (sp === 'progress') renderProgress();
+      if (sp === 'history') renderHistory();
+    });
+  });
+}
+
+function setActiveTab(activeBtn) {
+  document.querySelectorAll('#mainTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+function switchToWorkout(num) {
+  currentWorkoutNum = num;
+  const meta = WORKOUT_META.find(w => w.num === num);
+
+  // Highlight correct tab
+  const allBtns = document.querySelectorAll('#mainTabs .tab-btn');
+  allBtns.forEach(b => b.classList.remove('active'));
+  const wBtn = document.querySelector(`[data-workout-tab="${num}"]`);
+  if (wBtn) wBtn.classList.add('active');
+
+  // Show workout panel
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-workout-active').classList.add('active');
+
+  // Update workout label in header
+  const labelEl = document.getElementById('currentWorkoutLabel');
+  if (labelEl && meta) labelEl.textContent = `${meta.emoji} ${num}`;
+
+  renderExercises(num);
+  updateRings();
+}
 
 // ========================
 // TOAST
@@ -1232,8 +1281,8 @@ async function loadFromCloud() {
     if (confirm('לטעון נתונים מהענן?\nהנתונים המקומיים יוחלפו בנתוני הענן.')) {
       state = cloudState;
       saveState();
-      renderExercises('a');
-      renderExercises('b');
+      initTabs();
+      switchToWorkout(currentWorkoutNum || 1);
       renderHistory();
       document.getElementById('currentWeekNum').textContent = state.currentWeek;
       localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
@@ -1256,8 +1305,8 @@ function init() {
   document.getElementById('headerDate').textContent = now.toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' });
   document.getElementById('currentWeekNum').textContent = state.currentWeek;
 
-  renderExercises('a');
-  renderExercises('b');
+  initTabs();
+  switchToWorkout(1);
   renderHistory();
   _updateSyncStatus();
 }
