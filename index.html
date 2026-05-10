@@ -187,6 +187,19 @@
     color: var(--text); margin-bottom: 10px; line-height: 1.5;
   }
   .tip-coach::before { content: '💡 טיפ: '; font-weight: 700; color: #3b82f6; }
+  .tip-howto {
+    list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .tip-howto li {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 0.79rem; color: var(--text); line-height: 1.5;
+  }
+  .tip-howto li .step-num {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(59,130,246,0.2); color: #3b82f6;
+    font-size: 0.7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
   @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
 
   .images-strip {
@@ -672,8 +685,8 @@ const _ABS  = n => ({ id:`w${n}_abs`,  name:'כפיפות בטן',              
 const DEFAULT_EXERCISES = {
   1: [
     _WALK(1),
-    { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
+    { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'chest_press_machine' },
+    { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false, tipKey:'dumbbell_shoulder_press' },
     { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
     { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
     { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'         },
@@ -685,7 +698,7 @@ const DEFAULT_EXERCISES = {
     { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'lat_pulldown' },
     { id:'w2_3', name:'כפיפת מרפקים במוט W',     emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'biceps_curl'      },
     { id:'w2_4', name:'פשיטת מרפקים בחבל',       emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'triceps_pushdown' },
-    { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+    { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true,  tipKey:'hanging_knee_raises' },
     _ABS(2),
   ],
   3: [
@@ -702,7 +715,7 @@ const DEFAULT_EXERCISES = {
     { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips'  },
     { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
     { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise'  },
-    { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'single_arm_row' },
     { id:'w4_5', name:'הליכה בשיפוע 6%',        emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
     _ABS(4),
   ],
@@ -727,7 +740,7 @@ const DEFAULT_EXERCISES = {
   7: [
     _WALK(7),
     { id:'w7_1', name:'לחיצת חזה משקולות',      emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w7_2', name:'לחיצת כתפיים בישיבה',   emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
+    { id:'w7_2', name:'לחיצת כתפיים בישיבה',   emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false, tipKey:'dumbbell_shoulder_press' },
     { id:'w7_3', name:'כפיפת מרפקים בישיבה',   emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false, tipKey:'biceps_curl' },
     { id:'w7_4', name:'מכרעים (Lunges) סטטיים', emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w7_5', name:'הליכה מהירה',            emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
@@ -827,6 +840,17 @@ const EXERCISE_TIPS = {
     youtube: 'https://www.youtube.com/watch?v=WvLMauqrnK8',
     tip:     'וודא שהמרפקים לא בורחים רחוק מדי אחורה. דחוף למעלה עד יישור כמעט מלא.'
   },
+  dumbbell_shoulder_press: {
+    why:     'מתמקד בכתף הקדמית והצידית, ועובד גם על היד האחורית (Triceps).',
+    youtube: 'https://www.youtube.com/watch?v=qEwK6jnzpxs',
+    howto: [
+      'כוון את משענת הספסל לזווית כמעט 90° עם שיפוע קל אחורה – מוריד עומס מהגב התחתון.',
+      'הרם את המשקולות לגובה הכתפיים. מרפקים מעט לפני קו הגוף, לא פתוחים מדי לצדדים.',
+      'דחוף למעלה בתנועת קשת רחבה עד שהמשקולות קרובות אחת לשנייה מעל הראש. אל תנעל מרפקים בסוף.',
+      'הורד לאט ובשליטה עד גובה האוזניים/סנטר, וחזור חלילה.',
+    ],
+    tip:     '📏 בגובה 1.90 מ׳: שמור על תנועה חלקה, אל תפגיש משקולות בכוח למעלה. אם הגב מתקשת – המשקל כבד מדי.'
+  },
   // ── גב ──
   lat_pulldown: {
     why:     'מייצר את ה-V בגב שגורם למותניים להיראות צרות יותר.',
@@ -837,6 +861,18 @@ const EXERCISE_TIPS = {
     why:     'בונה עובי בגב ומשפר את היציבה (מונע כתפיים שמוטות קדימה).',
     youtube: 'https://www.youtube.com/watch?v=GZbfZ033f74',
     tip:     'שמור על גב ישר ואל תתנדנד קדימה ואחורה עם המותן.'
+  },
+  single_arm_row: {
+    why:     'בונה את "רוחב" הגב (צורת V) ומאזן תרגילי לחיצה – מונע כתפיים שמוטות קדימה. עובד על ה-Lats, הכתף האחורית, השכמות והיד הקדמית.',
+    youtube: 'https://www.youtube.com/watch?v=pYcpY20QaE8',
+    howto: [
+      'העמידה: הנח יד אחת וברך אחת על ספסל שטוח. הרגל השנייה יציבה על הרצפה. המשקולת תלויה מטה בצורה רפויה.',
+      'הגב: חייב להיות ישר ומקביל לרצפה – כמו שולחן. אל תעגל את הגב!',
+      'המשיכה: משוך את המשקולת לכיוון המותן (לא לכיוון החזה). דמיין שמישהו מושך את המרפק שלך לתקרה.',
+      'הכיווץ: בסוף התנועה – הצמד את השכמה לכיוון עמוד השדרה.',
+      'החזרה: הורד לאט עד למתיחה מלאה של הגב.',
+    ],
+    tip:     '📏 1.90 מ׳: אם ברך על ספסל יוצרת עומס בגב, נסה "Tripod". כשהמשקל כבד – רק הזרוע והשכמה זזות, שאר הגוף יצוק. 🔁 לתיקון חוסר איזון: תמיד התחל עם הצד החלש ועשה עם הצד החזק בדיוק אותו מספר חזרות – לסימטריה מלאה.'
   },
   // ── ידיים ──
   overhead_triceps: {
@@ -881,6 +917,17 @@ const EXERCISE_TIPS = {
     tip:     'וודא שהכרית יושבת מעט מעל העקב. כווץ את השריר, הורד לאט והחזר באיטיות.'
   },
   // ── ליבה ואירובי ──
+  hanging_knee_raises: {
+    why:     'מתמקד בשרירי הבטן (דגש על בטן תחתונה) ובמכופפי הירך. בונוס: כוח אחיזה ויציבות חגורת הכתפיים.',
+    youtube: 'https://www.youtube.com/watch?v=RlwWudXNIsQ',
+    howto: [
+      'האחיזה: תלה על מתח (או על Captain\'s Chair אם קשה). כפות הידיים פונות קדימה.',
+      'מצב מוצא: גוף ישר ורפוי, שכמות "נעולות" מעט מטה – אל תיתן לכתפיים להיצמד לאוזניים.',
+      'התנועה: הוצא אוויר, כווץ בטן והרם ברכיים לכיוון החזה. המטרה: "לגלגל" את האגן פנימה, לא רק להרים רגליים.',
+      'הירידה: הורד את הרגליים לאט ובשליטה מלאה. אל תיתן להן ליפול – זה החלק הכי חשוב!',
+    ],
+    tip:     '📏 1.90 מ׳ + גיל 55: המנופים הארוכים גורמים לנדנוד – ירידה איטית ומבוקרת תמנע אותו. אם מתחיל להתנדנד, עצור, ייצב ותמשיך.'
+  },
   plank: {
     why:     'מחזק את הליבה מבפנים ועוזר "להחזיק" את הבטן פנימה ליציבה טובה יותר.',
     youtube: 'https://www.youtube.com/watch?v=ASdvN_XEl_c',
@@ -1075,10 +1122,18 @@ function renderExercises(num) {
     const tipBtn = tipData
       ? `<button class="tip-btn" onclick="event.stopPropagation();toggleTip(${num},'${ex.id}')">💡 הסבר</button>`
       : '';
+    const howtoHTML = (tipData && tipData.howto)
+      ? `<ol class="tip-howto">${tipData.howto.map((s,i) =>
+          `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>`
+      : '';
+    const youtubeHTML = (tipData && tipData.youtube)
+      ? `<a class="tip-youtube" href="${tipData.youtube}" target="_blank" rel="noopener">▶ הדרכה ב-YouTube</a>`
+      : '';
     const tipPanel = tipData ? `
       <div class="tip-panel">
         <div class="tip-why"><strong>למה זה חשוב?</strong> ${tipData.why}</div>
-        <a class="tip-youtube" href="${tipData.youtube}" target="_blank" rel="noopener">▶ הדרכה ב-YouTube</a>
+        ${howtoHTML}
+        ${youtubeHTML}
         <div class="tip-coach">${tipData.tip}</div>
       </div>` : '';
 
