@@ -1650,8 +1650,10 @@ async function syncToCloud() {
       _setSyncBtnState('syncUpBtn', `⏳ ${i + 1}/${n}...`, 'loading');
       const chunkUrl = url + '?action=chunk&i=' + i + '&n=' + n + '&d=' + chunks[i];
       const result   = await _jsonpFetch(chunkUrl, 30000);
-      if (!result || result.status === 'error') {
-        throw new Error(result ? result.msg : 'timeout בשמירת חלק ' + (i + 1));
+      const ok = result && (result.status === 'chunk_ok' || result.status === 'ok');
+      if (!ok) {
+        if (result && result.status === 'error') throw new Error(result.msg);
+        throw new Error('Code.gs ישן — עדכן ופרסם גרסה חדשה ב-Apps Script');
       }
     }
 
