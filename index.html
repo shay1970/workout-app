@@ -196,11 +196,17 @@
     margin-bottom: 10px; text-decoration: none; cursor: pointer;
     border: 1px solid rgba(239,68,68,0.3);
   }
-  .tip-youtube-thumb img { width: 100%; height: auto; display: block; }
+  .tip-youtube-thumb img { width: 100%; height: auto; display: block; min-height: 0; }
   .tip-youtube-play {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     background: rgba(239,68,68,0.85); color: #fff;
     padding: 9px 12px; font-weight: 700; font-size: 0.82rem;
+  }
+  .tip-yt-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(239,68,68,0.85); color: #fff; text-decoration: none;
+    border-radius: 10px; padding: 12px; font-weight: 700; font-size: 0.82rem;
+    margin-bottom: 10px; cursor: pointer;
   }
   .tip-coach {
     background: rgba(59,130,246,0.08); border-right: 3px solid #3b82f6;
@@ -1152,9 +1158,8 @@ function renderExercises(num) {
     const _savedUrl = ytUrls[_tk] || (tipData ? tipData.youtube||'' : '');
     const _vid = _savedUrl ? extractYtId(_savedUrl) : null;
     const _thumbHTML = _vid
-      ? `<a class="tip-youtube-thumb" href="https://www.youtube.com/watch?v=${_vid}"
-             onclick="event.preventDefault();window.open('https://www.youtube.com/watch?v=${_vid}','_blank')">
-           <img src="https://img.youtube.com/vi/${_vid}/maxresdefault.jpg"
+      ? `<a class="tip-youtube-thumb" href="https://www.youtube.com/watch?v=${_vid}" target="_blank" rel="noopener">
+           <img src="https://img.youtube.com/vi/${_vid}/hqdefault.jpg"
                 onerror="ytThumbFallback(this,'${_vid}','https://www.youtube.com/watch?v=${_vid}')">
            <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
          </a>` : '';
@@ -1242,9 +1247,8 @@ function saveYtUrl(tipKey) {
   const preview = document.getElementById('ytpreview-' + tipKey);
   if (preview) {
     preview.innerHTML = vid
-      ? `<a class="tip-youtube-thumb" href="${url}"
-             onclick="event.preventDefault();window.open('${url}','_blank')">
-           <img src="https://img.youtube.com/vi/${vid}/maxresdefault.jpg"
+      ? `<a class="tip-youtube-thumb" href="${url}" target="_blank" rel="noopener">
+           <img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg"
                 onerror="ytThumbFallback(this,'${vid}','${url}')">
            <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
          </a>` : '';
@@ -1254,18 +1258,10 @@ function saveYtUrl(tipKey) {
 }
 
 function ytThumbFallback(img, vid, url) {
-  if (img.dataset.tried === 'hq') {
-    // Both maxres and hq failed → replace with text button
-    const a = img.closest('a');
-    if (a) {
-      a.outerHTML = `<a class="tip-yt-btn" href="${url}"
-        onclick="event.preventDefault();window.open('${url}','_blank')">
-        ▶&nbsp; צפה בהדרכה ב-YouTube</a>`;
-    }
-  } else {
-    // maxres failed → try hqdefault
-    img.dataset.tried = 'hq';
-    img.src = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+  // hqdefault failed → replace entire thumb with text button
+  const a = img.closest('a');
+  if (a) {
+    a.outerHTML = `<a class="tip-yt-btn" href="${url}" target="_blank" rel="noopener">▶&nbsp; צפה בהדרכה ב-YouTube</a>`;
   }
 }
 
