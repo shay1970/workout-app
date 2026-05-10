@@ -319,6 +319,17 @@
     padding: 8px 12px; width: 80px; text-align: center; direction: ltr;
   }
   .duration-input:focus { outline: none; border-color: var(--accent-b); }
+  /* WALK CARD */
+  .walk-card { border-color: rgba(20,184,166,0.4) !important; }
+  .walk-fields {
+    display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .walk-field-group { display: flex; flex-direction: column; gap: 6px; }
+  .walk-field-label { font-size: 0.8rem; font-weight: 700; color: #14b8a6; }
+  .walk-field-row { display: flex; align-items: center; gap: 8px; }
+  .walk-input { width: 90px !important; }
+  .walk-unit { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+
   .cardio-done-btn {
     padding: 10px 20px; border-radius: 8px;
     border: 2px solid var(--border);
@@ -654,76 +665,100 @@ const IMG = {
 // DATA
 // ========================
 
+// Shared walk/abs helpers — inserted at start/end of every workout
+const _WALK = n => ({ id:`w${n}_walk`, name:'הליכה על ההליכון 20 דק׳', emoji:'🏃', muscle:'קרדיו', category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳', cardio:true,  walkData:true });
+const _ABS  = n => ({ id:`w${n}_abs`,  name:'כפיפות בטן',               emoji:'🧠', muscle:'ליבה',   category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',     cardio:false });
+
 const DEFAULT_EXERCISES = {
   1: [
+    _WALK(1),
     { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
     { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
     { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
     { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'         },
+    _ABS(1),
   ],
   2: [
+    _WALK(2),
     { id:'w2_1', name:'חתירה במכונה',             emoji:'🔙', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'    },
     { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'lat_pulldown' },
     { id:'w2_3', name:'כפיפת מרפקים במוט W',     emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'10–12',     cardio:false },
     { id:'w2_4', name:'פשיטת מרפקים בחבל',       emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'10–12',     cardio:false },
     { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+    _ABS(2),
   ],
   3: [
+    _WALK(3),
     { id:'w3_1', name:'Leg Press (הרגיל)',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w3_2', name:'Leg Extension',            emoji:'🦵', muscle:'רגליים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w3_3', name:'Face Pulls (כתף אחורית)', emoji:'🎯', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'face_pull' },
     { id:'w3_4', name:'Leg Curl',                 emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w3_5', name:'הליכה מהירה 20 דק׳',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(3),
   ],
   4: [
+    _WALK(4),
     { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips'  },
     { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
     { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise'  },
     { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w4_5', name:'הליכה בשיפוע 6%',        emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(4),
   ],
   5: [
+    _WALK(5),
     { id:'w5_1', name:'פשיטת מרפקים מעבר לראש', emoji:'💥', muscle:'טריצפס',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'overhead_triceps' },
     { id:'w5_2', name:'כפיפת מרפקים (Hammer)',  emoji:'💪', muscle:'ביצפס',   category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'hammer_curls'     },
     { id:'w5_3', name:'לחיצת כתפיים במכונה',   emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w5_4', name:'פולי עליון (גב)',         emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'     },
     { id:'w5_5', name:'בטן "אופניים"',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',        cardio:true  },
+    _ABS(5),
   ],
   6: [
+    _WALK(6),
     { id:'w6_1', name:'Angled Leg Press',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w6_2', name:'Chest Press',             emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w6_3', name:'Shoulder Press',          emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w6_4', name:'חתירה בישיבה במכונה',   emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
     { id:'w6_5', name:'פלאנק צידי',             emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'     },
+    _ABS(6),
   ],
   7: [
+    _WALK(7),
     { id:'w7_1', name:'לחיצת חזה משקולות',      emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w7_2', name:'לחיצת כתפיים בישיבה',   emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
     { id:'w7_3', name:'כפיפת מרפקים בישיבה',   emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w7_4', name:'מכרעים (Lunges) סטטיים', emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w7_5', name:'הליכה מהירה',            emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(7),
   ],
   8: [
+    _WALK(8),
     { id:'w8_1', name:'פולי עליון רחב',         emoji:'🔝', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
     { id:'w8_2', name:'לחיצת חזה בשיפוע',      emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
     { id:'w8_3', name:'פרפר במכונה (Pec Deck)', emoji:'🦋', muscle:'חזה',     category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w8_4', name:'פולי תחתון (חתירה)',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
     { id:'w8_5', name:'Dead-Bug לבטן',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+    _ABS(8),
   ],
   9: [
+    _WALK(9),
     { id:'w9_1', name:'הרחקת זרועות (דאמבלים)', emoji:'💪', muscle:'כתפיים',  category:'כוח',           weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
     { id:'w9_2', name:'לחיצת ארנולד (כתפיים)', emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'arnold_press'  },
     { id:'w9_3', name:'כפיפת מרפקים בכבלים',  emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w9_4', name:'פשיטת מרפקים במוט ישר', emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w9_5', name:'הליכה (אינטרוולים)',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(9),
   ],
   10: [
+    _WALK(10),
     { id:'w10_1', name:'Assisted Dips',          emoji:'💥', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips' },
     { id:'w10_2', name:'חתירה במכונה',           emoji:'🔙', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'     },
     { id:'w10_3', name:'פשיטת מרפקים בחבל',     emoji:'💥', muscle:'טריצפס',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w10_4', name:'Leg Press',              emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w10_5', name:'הליכה מאומצת 25 דק׳',  emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'25 דק׳',   cardio:true  },
+    _ABS(10),
   ],
 };
 
@@ -903,21 +938,56 @@ function renderExercises(num) {
     let setsHTML = '';
     if (isCardio) {
       const cardioData = workout.cardio || {};
-      setsHTML = `
-        <div class="cardio-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
-          <div class="cardio-title">${ex.emoji} ${ex.name}</div>
-          <div class="cardio-row">
-            <span style="color:var(--text-dim);font-size:0.85rem">משך:</span>
-            <input type="number" class="duration-input" placeholder="דק׳"
-              value="${cardioData[ex.id+'_dur'] || ''}"
-              oninput="setCardio(${num},'${ex.id}','dur',this.value)">
-            <span style="color:var(--text-dim);font-size:0.85rem">דקות</span>
-            <button class="cardio-done-btn ${cardioData[ex.id+'_done'] ? 'done' : ''}"
-              onclick="setCardio(${num},'${ex.id}','done',null,this)">
-              ${cardioData[ex.id+'_done'] ? '✓ בוצע!' : 'סמן בוצע'}
-            </button>
-          </div>
-        </div>`;
+      const isDone = cardioData[ex.id+'_done'];
+      if (ex.walkData) {
+        // Treadmill walk — speed + incline fields
+        setsHTML = `
+          <div class="cardio-card walk-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
+            <div class="cardio-title">🏃 הליכה על ההליכון — 20 דקות חימום</div>
+            <div class="walk-fields">
+              <div class="walk-field-group">
+                <div class="walk-field-label">🚀 מהירות</div>
+                <div class="walk-field-row">
+                  <input type="number" step="0.5" min="1" max="15" class="duration-input walk-input"
+                    placeholder="6.0"
+                    value="${cardioData[ex.id+'_speed'] || ''}"
+                    oninput="setCardio(${num},'${ex.id}','speed',this.value)">
+                  <span class="walk-unit">קמ/ש</span>
+                </div>
+              </div>
+              <div class="walk-field-group">
+                <div class="walk-field-label">⛰️ שיפוע</div>
+                <div class="walk-field-row">
+                  <input type="number" step="0.5" min="0" max="15" class="duration-input walk-input"
+                    placeholder="3.0"
+                    value="${cardioData[ex.id+'_incline'] || ''}"
+                    oninput="setCardio(${num},'${ex.id}','incline',this.value)">
+                  <span class="walk-unit">%</span>
+                </div>
+              </div>
+              <button class="cardio-done-btn ${isDone ? 'done' : ''}" style="align-self:flex-end"
+                onclick="setCardio(${num},'${ex.id}','done',null,this)">
+                ${isDone ? '✓ בוצע!' : 'סמן בוצע'}
+              </button>
+            </div>
+          </div>`;
+      } else {
+        setsHTML = `
+          <div class="cardio-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
+            <div class="cardio-title">${ex.emoji} ${ex.name}</div>
+            <div class="cardio-row">
+              <span style="color:var(--text-dim);font-size:0.85rem">משך:</span>
+              <input type="number" class="duration-input" placeholder="דק׳"
+                value="${cardioData[ex.id+'_dur'] || ''}"
+                oninput="setCardio(${num},'${ex.id}','dur',this.value)">
+              <span style="color:var(--text-dim);font-size:0.85rem">דקות</span>
+              <button class="cardio-done-btn ${isDone ? 'done' : ''}"
+                onclick="setCardio(${num},'${ex.id}','done',null,this)">
+                ${isDone ? '✓ בוצע!' : 'סמן בוצע'}
+              </button>
+            </div>
+          </div>`;
+      }
     } else {
       setsHTML = `<div class="sets-label">סטים</div><div class="sets-grid">`;
       sets.forEach((s, i) => {
