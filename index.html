@@ -154,6 +154,41 @@
   }
   .exercise-card.open .exercise-body { display: block; }
 
+  /* TIP PANEL */
+  .tip-btn {
+    background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+    color: #fbbf24; border-radius: 20px; padding: 4px 10px; font-size: 0.75rem;
+    cursor: pointer; font-family: 'Rubik', sans-serif; font-weight: 600;
+    white-space: nowrap; transition: background 0.2s;
+    flex-shrink: 0; margin-right: 4px;
+  }
+  .tip-btn:hover { background: rgba(251,191,36,0.22); }
+  .tip-panel {
+    display: none; padding: 14px 20px 4px;
+    border-top: 1px solid rgba(251,191,36,0.2);
+    background: rgba(251,191,36,0.04);
+    animation: fadeIn 0.2s ease;
+  }
+  .exercise-card.tip-open .tip-panel { display: block; }
+  .tip-why {
+    font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5;
+  }
+  .tip-why strong { color: #fbbf24; }
+  .tip-youtube {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+    color: #ef4444; border-radius: 20px; padding: 5px 12px; font-size: 0.78rem;
+    text-decoration: none; font-weight: 600; margin-bottom: 10px; transition: background 0.2s;
+  }
+  .tip-youtube:hover { background: rgba(239,68,68,0.22); }
+  .tip-coach {
+    background: rgba(59,130,246,0.08); border-right: 3px solid #3b82f6;
+    border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 0.8rem;
+    color: var(--text); margin-bottom: 10px; line-height: 1.5;
+  }
+  .tip-coach::before { content: '💡 טיפ: '; font-weight: 700; color: #3b82f6; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
   .images-strip {
     display: flex;
     gap: 10px;
@@ -623,13 +658,13 @@ const DEFAULT_EXERCISES = {
   1: [
     { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false },
-    { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
-    { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true  },
+    { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
+    { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
+    { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'         },
   ],
   2: [
-    { id:'w2_1', name:'חתירה במכונה',             emoji:'🔙', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false },
+    { id:'w2_1', name:'חתירה במכונה',             emoji:'🔙', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'    },
+    { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'lat_pulldown' },
     { id:'w2_3', name:'כפיפת מרפקים במוט W',     emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'10–12',     cardio:false },
     { id:'w2_4', name:'פשיטת מרפקים בחבל',       emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'10–12',     cardio:false },
     { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
@@ -637,30 +672,30 @@ const DEFAULT_EXERCISES = {
   3: [
     { id:'w3_1', name:'Leg Press (הרגיל)',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w3_2', name:'Leg Extension',            emoji:'🦵', muscle:'רגליים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w3_3', name:'Face Pulls (כתף אחורית)', emoji:'🎯', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w3_3', name:'Face Pulls (כתף אחורית)', emoji:'🎯', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'face_pull' },
     { id:'w3_4', name:'Leg Curl',                 emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w3_5', name:'הליכה מהירה 20 דק׳',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
   ],
   4: [
-    { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false },
-    { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false },
+    { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips'  },
+    { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
+    { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise'  },
     { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w4_5', name:'הליכה בשיפוע 6%',        emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
   ],
   5: [
-    { id:'w5_1', name:'פשיטת מרפקים מעבר לראש', emoji:'💥', muscle:'טריצפס',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w5_2', name:'כפיפת מרפקים (Hammer)',  emoji:'💪', muscle:'ביצפס',   category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_1', name:'פשיטת מרפקים מעבר לראש', emoji:'💥', muscle:'טריצפס',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'overhead_triceps' },
+    { id:'w5_2', name:'כפיפת מרפקים (Hammer)',  emoji:'💪', muscle:'ביצפס',   category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'hammer_curls'     },
     { id:'w5_3', name:'לחיצת כתפיים במכונה',   emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w5_4', name:'פולי עליון (גב)',         emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_4', name:'פולי עליון (גב)',         emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'     },
     { id:'w5_5', name:'בטן "אופניים"',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',        cardio:true  },
   ],
   6: [
     { id:'w6_1', name:'Angled Leg Press',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w6_2', name:'Chest Press',             emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w6_3', name:'Shoulder Press',          emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w6_4', name:'חתירה בישיבה במכונה',   emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w6_5', name:'פלאנק צידי',             emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true  },
+    { id:'w6_4', name:'חתירה בישיבה במכונה',   emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
+    { id:'w6_5', name:'פלאנק צידי',             emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'     },
   ],
   7: [
     { id:'w7_1', name:'לחיצת חזה משקולות',      emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
@@ -670,22 +705,22 @@ const DEFAULT_EXERCISES = {
     { id:'w7_5', name:'הליכה מהירה',            emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
   ],
   8: [
-    { id:'w8_1', name:'פולי עליון רחב',         emoji:'🔝', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w8_2', name:'לחיצת חזה בשיפוע',      emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_1', name:'פולי עליון רחב',         emoji:'🔝', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
+    { id:'w8_2', name:'לחיצת חזה בשיפוע',      emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
     { id:'w8_3', name:'פרפר במכונה (Pec Deck)', emoji:'🦋', muscle:'חזה',     category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
-    { id:'w8_4', name:'פולי תחתון (חתירה)',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_4', name:'פולי תחתון (חתירה)',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
     { id:'w8_5', name:'Dead-Bug לבטן',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
   ],
   9: [
-    { id:'w9_1', name:'הרחקת זרועות (דאמבלים)', emoji:'💪', muscle:'כתפיים',  category:'כוח',           weight:'', sets:3, reps:'15',        cardio:false },
-    { id:'w9_2', name:'לחיצת ארנולד (כתפיים)', emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w9_1', name:'הרחקת זרועות (דאמבלים)', emoji:'💪', muscle:'כתפיים',  category:'כוח',           weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
+    { id:'w9_2', name:'לחיצת ארנולד (כתפיים)', emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'arnold_press'  },
     { id:'w9_3', name:'כפיפת מרפקים בכבלים',  emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w9_4', name:'פשיטת מרפקים במוט ישר', emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w9_5', name:'הליכה (אינטרוולים)',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
   ],
   10: [
-    { id:'w10_1', name:'Assisted Dips',          emoji:'💥', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false },
-    { id:'w10_2', name:'חתירה במכונה',           emoji:'🔙', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w10_1', name:'Assisted Dips',          emoji:'💥', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips' },
+    { id:'w10_2', name:'חתירה במכונה',           emoji:'🔙', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'     },
     { id:'w10_3', name:'פשיטת מרפקים בחבל',     emoji:'💥', muscle:'טריצפס',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w10_4', name:'Leg Press',              emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
     { id:'w10_5', name:'הליכה מאומצת 25 דק׳',  emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'25 דק׳',   cardio:true  },
@@ -714,6 +749,62 @@ const CAT_COLORS = {
   'ידיים/כתפיים':  { bg:'rgba(245,158,11,0.15)',  color:'#f59e0b', border:'rgba(245,158,11,0.3)'  },
   'רגליים/גב':     { bg:'rgba(34,197,94,0.15)',   color:'#22c55e', border:'rgba(34,197,94,0.3)'   },
   'ליבה ואירובי':  { bg:'rgba(20,184,166,0.15)',  color:'#14b8a6', border:'rgba(20,184,166,0.3)'  },
+};
+
+// ========================
+// EXERCISE TIPS LIBRARY
+// ========================
+const EXERCISE_TIPS = {
+  incline_press: {
+    why:     'בונה את החלק העליון של החזה ומעניק מראה "מלא" מתחת לעצם הבריח.',
+    youtube: 'https://www.youtube.com/watch?v=8iPEnn-ltC8',
+    tip:     'אל תוריד את המוט/משקולות לצוואר, אלא לחלק העליון של החזה.'
+  },
+  lateral_raise: {
+    why:     'התרגיל מספר 1 לבניית רוחב כתפיים (הכתף הצידית).',
+    youtube: 'https://www.youtube.com/watch?v=PzsMitRIn84',
+    tip:     'דמיין שאתה שופך מים מקנקנים בסוף התנועה. אל תרים מעבר לגובה הכתף.'
+  },
+  face_pull: {
+    why:     'משפר יציבה, בונה כתף אחורית ומבליט את המראה הבריא והזקוף.',
+    youtube: 'https://www.youtube.com/watch?v=rep-qVOkqgk',
+    tip:     'משוך את החבל לכיוון המצח ולא לכיוון הסנטר.'
+  },
+  assisted_dips: {
+    why:     'תרגיל כוח מעולה שעובד על החזה התחתון והיד האחורית (Triceps).',
+    youtube: 'https://www.youtube.com/watch?v=yZ8HnS9IdmM',
+    tip:     'רכון מעט קדימה כדי להפעיל יותר את החזה ופחות את המרפקים.'
+  },
+  lat_pulldown: {
+    why:     'מייצר את ה-V בגב שגורם למותניים להיראות צרות יותר.',
+    youtube: 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
+    tip:     'משוך עם המרפקים למטה, לא עם כפות הידיים.'
+  },
+  arnold_press: {
+    why:     'תרגיל כתפיים דינמי שמפעיל את כל חלקי הכתף בזכות הסיבוב.',
+    youtube: 'https://www.youtube.com/watch?v=6Z15_Wdxp6M',
+    tip:     'בצע את הסיבוב בצורה חלקה, אל תמהר.'
+  },
+  cable_row: {
+    why:     'בונה עובי בגב ומשפר את היציבה (מונע כתפיים שמוטות קדימה).',
+    youtube: 'https://www.youtube.com/watch?v=GZbfZ033f74',
+    tip:     'שמור על גב ישר ואל תתנדנד קדימה ואחורה עם המותן.'
+  },
+  overhead_triceps: {
+    why:     'עובד על "הראש הארוך" של היד האחורית – זה מה שנותן ליד נפח מרשים.',
+    youtube: 'https://www.youtube.com/watch?v=-Vyt2QdsR7E',
+    tip:     'שמור על המרפקים קרובים לראש, אל תיתן להם "לברוח" לצדדים.'
+  },
+  hammer_curls: {
+    why:     'בונה גם את היד הקדמית וגם את האמה, למראה זרוע עבה וחזקה.',
+    youtube: 'https://www.youtube.com/watch?v=TwD-YGVP4Bk',
+    tip:     'אל תשתמש בתנופה של הגוף (Cheat curls). רק המרפק זז.'
+  },
+  plank: {
+    why:     'מחזק את הליבה מבפנים ועוזר "להחזיק" את הבטן פנימה ליציבה טובה יותר.',
+    youtube: 'https://www.youtube.com/watch?v=ASdvN_XEl_c',
+    tip:     'כווץ את הישבן ואת הבטן חזק – אל תיתן לגב התחתון לשקוע.'
+  },
 };
 
 let currentWorkoutNum = 1;
@@ -853,6 +944,18 @@ function renderExercises(num) {
       setsHTML += '</div>';
     }
 
+    // Build tip panel if this exercise has tips
+    const tipData = ex.tipKey ? EXERCISE_TIPS[ex.tipKey] : null;
+    const tipBtn = tipData
+      ? `<button class="tip-btn" onclick="event.stopPropagation();toggleTip(${num},'${ex.id}')">💡 הסבר</button>`
+      : '';
+    const tipPanel = tipData ? `
+      <div class="tip-panel">
+        <div class="tip-why"><strong>למה זה חשוב?</strong> ${tipData.why}</div>
+        <a class="tip-youtube" href="${tipData.youtube}" target="_blank" rel="noopener">▶ הדרכה ב-YouTube</a>
+        <div class="tip-coach">${tipData.tip}</div>
+      </div>` : '';
+
     card.innerHTML = `
       <div class="exercise-header" onclick="toggleCard(${num},'${ex.id}')">
         <div style="width:70px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">${ex.emoji}</div>
@@ -863,9 +966,11 @@ function renderExercises(num) {
             ${!isCardio ? ` · ${ex.weight||'—'} ק״ג · ${ex.sets}×${ex.reps}` : ''}
           </div>
         </div>
+        ${tipBtn}
         <span class="exercise-badge ${badgeClass}">${badgeText}</span>
         <span class="expand-icon">⌄</span>
       </div>
+      ${tipPanel}
       <div class="exercise-body">
         ${setsHTML}
         <div class="notes-area">
@@ -881,6 +986,10 @@ function renderExercises(num) {
 
 function toggleCard(num, id) {
   document.getElementById('card-' + num + '-' + id)?.classList.toggle('open');
+}
+
+function toggleTip(num, id) {
+  document.getElementById('card-' + num + '-' + id)?.classList.toggle('tip-open');
 }
 
 function toggleSet(num, id, idx, btn) {
