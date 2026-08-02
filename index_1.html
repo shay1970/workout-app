@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💪 תוכנית אימונים - שי</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Secular+One&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent-a: #3b82f6;
+    --accent-a-glow: rgba(59,130,246,0.3);
+    --accent-b: #22c55e;
+    --accent-b-glow: rgba(34,197,94,0.3);
+    --accent-warn: #f59e0b;
+    --text: #e8e8f0;
+    --text-dim: #6b6b8a;
+    --text-muted: #3d3d5c;
+    --radius: 14px;
+    --check-done: #22c55e;
+    --check-partial: #f59e0b;
+    --check-none: #ef4444;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Rubik', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f0f1f 0%, #1a1030 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(20px);
+  }
+  .header-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+  .header-title span { color: var(--accent-a); }
+  .header-date { font-size: 0.8rem; color: var(--text-dim); }
+  .header-stats { display: flex; gap: 16px; align-items: center; }
+  .stat-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .stat-chip span { color: var(--accent-a); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+    gap: 4px;
+  }
+  .tab-btn {
+    background: none; border: none; color: var(--text-dim);
+    padding: 14px 20px; cursor: pointer;
+    font-family: 'Rubik', sans-serif; font-size: 0.9rem; font-weight: 600;
+    border-bottom: 3px solid transparent; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--accent-a); }
+  .tab-btn.tab-progress.active { border-bottom-color: var(--accent-warn); }
+  .tab-btn[data-workout-tab].active { border-bottom-color: var(--wcolor, var(--accent-a)); color: var(--wcolor, var(--text)); }
+
+  /* CONTENT */
+  .content { max-width: 800px; margin: 0 auto; padding: 24px 16px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* WORKOUT HEADER */
+  .workout-header {
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .workout-header.type-a {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.05) 100%);
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+  .workout-header.type-b {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%);
+    border: 1px solid rgba(34,197,94,0.3);
+  }
+  .workout-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.7; }
+  .workout-title { font-size: 1.5rem; font-weight: 800; margin-top: 4px; }
+  .workout-progress-ring { position: relative; }
+  .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.9rem; font-weight: 800; text-align: center; }
+
+  /* EXERCISE CARD */
+  .exercise-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .exercise-card.completed { border-color: rgba(34,197,94,0.4); }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .exercise-thumb {
+    width: 70px; height: 52px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+  }
+  .exercise-info { flex: 1; }
+  .exercise-name { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+  .exercise-meta { font-size: 0.8rem; color: var(--text-dim); }
+  .exercise-badge {
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .badge-done { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  .badge-partial { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-none { background: rgba(239,68,68,0.08); color: #6b6b8a; border: 1px solid var(--border); }
+  .expand-icon { color: var(--text-dim); transition: transform 0.3s; font-size: 1.1rem; }
+  .exercise-card.open .expand-icon { transform: rotate(180deg); }
+
+  /* EXERCISE BODY */
+  .exercise-body {
+    display: none;
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .exercise-card.open .exercise-body { display: block; }
+
+  /* TIP PANEL */
+  .tip-btn {
+    background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+    color: #fbbf24; border-radius: 20px; padding: 4px 10px; font-size: 0.75rem;
+    cursor: pointer; font-family: 'Rubik', sans-serif; font-weight: 600;
+    white-space: nowrap; transition: background 0.2s;
+    flex-shrink: 0; margin-right: 4px;
+  }
+  .tip-btn:hover { background: rgba(251,191,36,0.22); }
+  .tip-panel {
+    display: none; padding: 14px 20px 4px;
+    border-top: 1px solid rgba(251,191,36,0.2);
+    background: rgba(251,191,36,0.04);
+    animation: fadeIn 0.2s ease;
+  }
+  .exercise-card.tip-open .tip-panel { display: block; }
+  .tip-why {
+    font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5;
+  }
+  .tip-why strong { color: #fbbf24; }
+  /* YouTube input + preview */
+  .tip-yt-editor {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
+  }
+  .tip-yt-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'Rubik', sans-serif;
+    font-size: 0.78rem; padding: 8px 10px; direction: ltr; min-width: 0;
+  }
+  .tip-yt-input:focus { outline: none; border-color: #ef4444; }
+  .tip-yt-input::placeholder { color: var(--text-dim); direction: rtl; text-align: right; }
+  .tip-yt-save {
+    flex-shrink: 0; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+    color: #ef4444; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+    font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 0.78rem;
+  }
+  .tip-yt-save:hover { background: rgba(239,68,68,0.28); }
+  .tip-youtube-thumb {
+    display: block; border-radius: 10px; overflow: hidden;
+    margin-bottom: 10px; text-decoration: none; cursor: pointer;
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .tip-youtube-thumb img { width: 100%; height: auto; display: block; min-height: 0; }
+  .tip-youtube-play {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(239,68,68,0.85); color: #fff;
+    padding: 9px 12px; font-weight: 700; font-size: 0.82rem;
+  }
+  .tip-yt-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(239,68,68,0.85); color: #fff; text-decoration: none;
+    border-radius: 10px; padding: 12px; font-weight: 700; font-size: 0.82rem;
+    margin-bottom: 10px; cursor: pointer;
+  }
+  .tip-coach {
+    background: rgba(59,130,246,0.08); border-right: 3px solid #3b82f6;
+    border-radius: 0 8px 8px 0; padding: 8px 12px; font-size: 0.8rem;
+    color: var(--text); margin-bottom: 10px; line-height: 1.5;
+  }
+  .tip-coach::before { content: '💡 טיפ: '; font-weight: 700; color: #3b82f6; }
+  .tip-howto {
+    list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 5px;
+  }
+  .tip-howto li {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 0.79rem; color: var(--text); line-height: 1.5;
+  }
+  .tip-howto li .step-num {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(59,130,246,0.2); color: #3b82f6;
+    font-size: 0.7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+  .images-strip {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .images-strip img {
+    height: 160px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* SETS */
+  .sets-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+  .sets-grid { display: flex; flex-direction: column; gap: 10px; }
+  .set-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .set-row.set-done { border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.05); }
+  .set-number { width: 24px; height: 24px; border-radius: 50%; background: var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+  .set-row.set-done .set-number { background: var(--accent-b); color: #fff; }
+
+  .set-fields { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 0.68rem; color: var(--text-dim); font-weight: 600; }
+  .field-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    width: 80px;
+    text-align: center;
+    direction: ltr;
+  }
+  .field-input:focus { outline: none; border-color: var(--accent-a); }
+
+  .set-check {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .set-check:hover { border-color: var(--accent-b); }
+  .set-check.checked { background: var(--accent-b); border-color: var(--accent-b); }
+
+  /* NOTES */
+  .notes-area {
+    margin-top: 14px;
+  }
+  .notes-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.85rem;
+    padding: 12px;
+    resize: vertical;
+    min-height: 70px;
+    direction: rtl;
+  }
+  .notes-input:focus { outline: none; border-color: var(--accent-a); }
+  .notes-input::placeholder { color: var(--text-muted); }
+
+  /* SAVE BUTTON */
+  .save-bar {
+    position: sticky; bottom: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; gap: 12px;
+    backdrop-filter: blur(20px);
+  }
+  .btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent-a) 0%, #2563eb 100%);
+    color: #fff;
+    border: none; border-radius: 10px;
+    padding: 14px 24px;
+    font-family: 'Rubik', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.1); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Rubik', sans-serif; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* CARDIO CARD */
+  .cardio-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .cardio-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+  .cardio-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .duration-input {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Rubik', sans-serif; font-size: 0.9rem; font-weight: 600;
+    padding: 8px 12px; width: 80px; text-align: center; direction: ltr;
+  }
+  .duration-input:focus { outline: none; border-color: var(--accent-b); }
+  /* WALK CARD */
+  .walk-card { border-color: rgba(20,184,166,0.4) !important; }
+  .walk-fields {
+    display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .walk-field-group { display: flex; flex-direction: column; gap: 6px; }
+  .walk-field-label { font-size: 0.8rem; font-weight: 700; color: #14b8a6; }
+  .walk-field-row { display: flex; align-items: center; gap: 8px; }
+  .walk-input { width: 90px !important; }
+  .walk-unit { font-size: 0.8rem; color: var(--text-dim); white-space: nowrap; }
+
+  .cardio-done-btn {
+    padding: 10px 20px; border-radius: 8px;
+    border: 2px solid var(--border);
+    background: none; color: var(--text-dim);
+    font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cardio-done-btn.done { background: var(--accent-b); border-color: var(--accent-b); color: #fff; }
+
+  /* PROGRESS TAB */
+  .week-selector {
+    display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto;
+  }
+  .week-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-dim);
+    font-family: 'Rubik', sans-serif; font-size: 0.85rem; font-weight: 600;
+    padding: 10px 18px; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .week-btn.active { background: rgba(245,158,11,0.15); border-color: var(--accent-warn); color: var(--accent-warn); }
+
+  .progress-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-table table { width: 100%; border-collapse: collapse; }
+  .progress-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .progress-table tr:last-child td { border-bottom: none; }
+  .progress-table td:not(:first-child) { text-align: center; direction: ltr; }
+  .progress-input-sm {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: 'Rubik', sans-serif; font-size: 0.85rem; font-weight: 600;
+    padding: 5px 8px; width: 70px; text-align: center; direction: ltr;
+  }
+  .progress-input-sm:focus { outline: none; border-color: var(--accent-warn); }
+
+  .improvement-badge {
+    font-size: 0.75rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 12px;
+    display: inline-block;
+  }
+  .imp-up { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .imp-same { background: rgba(107,107,138,0.15); color: #6b6b8a; }
+
+  /* ADD EXERCISE */
+  .add-exercise-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .add-exercise-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+  .add-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .add-form input, .add-form select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text);
+    font-family: 'Rubik', sans-serif; font-size: 0.85rem;
+    padding: 10px 12px; direction: rtl;
+  }
+  .add-form input:focus, .add-form select:focus { outline: none; border-color: var(--accent-a); }
+  .add-form .full-width { grid-column: 1/-1; }
+  .btn-add {
+    grid-column: 1/-1;
+    background: var(--surface2); border: 1px dashed rgba(59,130,246,0.4);
+    color: var(--accent-a); border-radius: 10px;
+    padding: 14px; font-family: 'Rubik', sans-serif;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-add:hover { background: rgba(59,130,246,0.1); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: #fff;
+    padding: 12px 24px; border-radius: 30px;
+    font-weight: 600; font-size: 0.9rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s; z-index: 999;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .toast.show { opacity: 1; }
+
+  /* SYNC */
+  .sync-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-dim);
+    padding: 7px 14px;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sync-btn:hover { border-color: var(--accent-a); color: var(--text); }
+  .sync-btn.syncing { border-color: var(--accent-a); color: var(--accent-a); animation: pulse 1s infinite; }
+  .sync-btn.success { border-color: var(--accent-b); color: var(--accent-b); }
+  .sync-btn.error { border-color: #ef4444; color: #ef4444; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .sync-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text-muted); display: inline-block; margin-left: 4px;
+    transition: background 0.3s;
+  }
+  .sync-dot.ok { background: var(--accent-b); }
+
+  .sync-modal {
+    display: none;
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .sync-modal.open { display: flex; }
+  .sync-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%;
+    max-width: 500px;
+  }
+  .sync-modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 6px; }
+  .sync-modal-sub { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
+  .sync-last-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.78rem; color: var(--text-dim);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+    margin-bottom: 14px;
+  }
+  .sync-url-label { font-size: 0.78rem; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; }
+  .sync-url-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.8rem;
+    padding: 10px 12px;
+    direction: ltr;
+    margin-bottom: 16px;
+  }
+  .sync-url-input:focus { outline: none; border-color: var(--accent-a); }
+  .sync-url-input::placeholder { color: var(--text-muted); font-size: 0.75rem; }
+  .sync-actions { display: flex; gap: 10px; margin-bottom: 10px; }
+  .sync-actions .btn-primary, .sync-actions .btn-secondary { flex: 1; }
+
+  /* HISTORY */
+  .history-section { margin-top: 20px; }
+  .history-title { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.85rem;
+  }
+  .history-date { color: var(--text-dim); font-size: 0.78rem; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .add-form { grid-template-columns: 1fr; }
+    .header-stats { display: none; }
+    .set-fields { gap: 6px; }
+    .field-input { width: 70px; }
+  }
+
+  svg.ring { transform: rotate(-90deg); }
+
+  /* ==================================================== */
+  /* ======  WARM LIGHT · CORAL RESKIN (overrides)  ====== */
+  /* ==================================================== */
+  :root{
+    --bg:#FBF6EF; --surface:#FFFFFF; --surface2:#F6EFE6; --border:#EBE0D2;
+    --accent-a:#F0625F; --accent-a-glow:rgba(240,98,95,0.30);
+    --accent-b:#16A34A; --accent-b-glow:rgba(22,163,74,0.28);
+    --accent-warn:#F59E0B;
+    --text:#2C2621; --text-dim:#9A8C7D; --text-muted:#C4B7A8;
+    --radius:16px;
+    --check-done:#16A34A; --check-partial:#F59E0B; --check-none:#EF4444;
+  }
+  /* display face for headings + numbers */
+  .header-title,.workout-title,.ring-text,.sync-modal-title,.add-exercise-title{
+    font-family:'Secular One', sans-serif; font-weight:400; }
+  /* warm bright header */
+  .header{ background:linear-gradient(180deg,#FFF3EF 0%, #FBF6EF 100%); }
+  /* HERO current-workout card */
+  .workout-header{ color:#fff; border:none; border-radius:22px;
+    box-shadow:0 16px 34px rgba(236,90,60,.28); }
+  .workout-header.type-a{ background:linear-gradient(135deg,#FF9A7A 0%, #F0625F 55%, #EC5A6E 100%); }
+  .workout-header.type-b{ background:linear-gradient(135deg,#34D399 0%, #10B981 55%, #0D9488 100%);
+    box-shadow:0 16px 34px rgba(16,185,129,.26); }
+  .workout-header .workout-label{ opacity:.92; }
+  .ring-text{ color:#fff; }
+  /* soft warm shadows on cards */
+  .exercise-card,.cardio-card,.add-exercise-section,.progress-table{ box-shadow:0 6px 18px rgba(90,55,20,.06); }
+  .history-item{ box-shadow:0 4px 12px rgba(90,55,20,.05); }
+  .sync-modal-box{ box-shadow:0 30px 70px rgba(40,25,10,.35); }
+  .save-bar{ box-shadow:0 -6px 20px rgba(90,55,20,.06); }
+  /* coral primary button */
+  .btn-primary{ background:linear-gradient(135deg,#FF9A7A 0%, #F0625F 100%);
+    box-shadow:0 8px 20px rgba(240,98,95,.30); }
+  /* recolor former-blue accents -> coral */
+  .tip-coach{ background:rgba(240,98,95,.08); border-right-color:#F0625F; }
+  .tip-coach::before{ color:#E14B57; }
+  .tip-howto li .step-num{ background:rgba(240,98,95,.16); color:#E14B57; }
+  .btn-add{ border-color:rgba(240,98,95,.45); }
+  .btn-add:hover{ background:rgba(240,98,95,.10); }
+  /* amber tip text readable on light bg */
+  .tip-btn{ color:#B45309; }
+  .tip-why strong{ color:#B45309; }
+  /* deeper green success on light */
+  .badge-done{ color:#16A34A; }
+  .imp-up{ color:#16A34A; }
+  /* warm dark toast */
+  .toast{ background:#3A322B; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">💪 <span>אימוני</span> שי</div>
+    <div class="header-date" id="headerDate"></div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-chip">שבוע <span id="currentWeekNum">1</span></div>
+    <div class="stat-chip">אימון <span id="currentWorkoutLabel">1</span></div>
+    <div class="stat-chip"><span id="progressCurrent">0%</span></div>
+    <button class="sync-btn" id="syncBtn" onclick="showSyncModal()">
+      <span class="sync-dot" id="syncDot"></span>☁️ סנכרן
+    </button>
+  </div>
+</div>
+
+<!-- SYNC MODAL -->
+<div class="sync-modal" id="syncModal" onclick="if(event.target===this)closeSyncModal()">
+  <div class="sync-modal-box">
+    <div class="sync-modal-title">☁️ סינכרון ענן</div>
+    <div class="sync-modal-sub">שמור את נתוני האימון ב-Google Sheets וטען אותם בכל מכשיר.<br>מחייב Google Apps Script מפורס — ראה הוראות בקובץ Code.gs.</div>
+    <div class="sync-last-row">
+      <span class="sync-dot" id="syncDotModal"></span>
+      <span id="syncLastTime">לא סונכרן עדיין</span>
+    </div>
+    <div class="sync-url-label">כתובת Google Apps Script (Web App URL):</div>
+    <input type="url" class="sync-url-input" id="syncUrlInput"
+      placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+      oninput="saveSyncUrl()">
+    <div class="sync-actions">
+      <button class="btn-primary" id="syncUpBtn" onclick="syncToCloud()">⬆️ שמור לענן</button>
+      <button class="btn-secondary" id="syncDownBtn" onclick="loadFromCloud()">⬇️ טען מהענן</button>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.12);margin:16px 0 10px"></div><div style="font-size:13px;opacity:.85;margin-bottom:8px">📦 גיבוי מקומי (קובץ JSON, ללא אינטרנט)</div><div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn-secondary" style="flex:1" onclick="exportBackup()">⬇️ ייצא קובץ</button><button class="btn-secondary" style="flex:1" onclick="document.getElementById('importFile').click()">⬆️ ייבא קובץ</button></div><input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importBackup(event)"><button class="btn-secondary" onclick="closeSyncModal()" style="width:100%">סגור</button>
+  </div>
+</div>
+
+<div class="tabs" id="mainTabs">
+  <button class="tab-btn tab-progress" data-special="progress">📊 התקדמות</button>
+  <button class="tab-btn" data-special="history">📅 היסטוריה</button>
+</div>
+
+<div class="content">
+
+<!-- ACTIVE WORKOUT — rendered dynamically by JS -->
+<div id="tab-workout-active" class="tab-panel active">
+  <div id="activeWorkoutHeader"></div>
+  <div id="exercises-active"></div>
+  <div class="add-exercise-section">
+    <div class="add-exercise-title">➕ הוסף תרגיל</div>
+    <div class="add-form">
+      <input type="text" id="addNameActive" placeholder="שם תרגיל">
+      <select id="addGroupActive">
+        <option value="">קטגוריה</option>
+        <option>כוח</option><option>ניפוח</option>
+        <option>ידיים/כתפיים</option><option>רגליים/גב</option>
+        <option>ליבה ואירובי</option>
+      </select>
+      <input type="text" id="addWeightActive" placeholder="משקל (ק״ג)">
+      <input type="text" id="addSetsActive" placeholder="סטים × חזרות">
+      <button class="btn-add" onclick="addExercise()">+ הוסף תרגיל</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="tab-progress" class="tab-panel">
+  <div class="week-selector" id="weekSelector"></div>
+  <div class="progress-table">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:right">תרגיל</th>
+          <th>משקל</th>
+          <th>חזרות</th>
+          <th>שינוי</th>
+        </tr>
+      </thead>
+      <tbody id="progressTableBody"></tbody>
+    </table>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
+    <div class="sets-label">🧠 חוק המשחק</div>
+    <div style="margin-top:12px;font-size:0.95rem;line-height:1.8;color:var(--text)">
+      <div>📈 <strong>שבוע 1</strong> — התחלה: לסיים כל הסטים</div>
+      <div>📈 <strong>שבוע 2</strong> — מטרה: להגיע ל־12 חזרות</div>
+      <div>📈 <strong>שבוע 3</strong> — מטרה: +2.5 עד 5 ק״ג</div>
+      <div>📈 <strong>שבוע 4</strong> — מטרה: לייצב, 10–12 חזרות</div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="tab-history" class="tab-panel">
+  <div class="history-section">
+    <div class="history-title">📅 אימונים שבוצעו</div>
+    <div class="history-list" id="historyList">
+      <div style="color:var(--text-dim);font-size:0.9rem;padding:16px">עדיין אין אימונים מוקלטים</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<div class="save-bar">
+  <button class="btn-secondary" onclick="resetCurrentWorkout()">🔄 איפוס</button>
+  <button class="btn-primary" onclick="saveWorkout()">💾 שמור אימון</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IMG = {
+  "angled_leg_press_1": "assets/ex01.webp",
+  "angled_leg_press_2": "assets/ex02.webp",
+  "leg_curl_1": "assets/ex03.webp",
+  "leg_curl_2": "assets/ex04.webp",
+  "chest_press_1": "assets/ex05.webp",
+  "chest_press_2": "assets/ex06.webp",
+  "triceps_pushdown_1": "assets/ex07.webp",
+  "triceps_pushdown_2": "assets/ex08.webp",
+  "leg_extension_1": "assets/ex09.webp",
+  "leg_extension_2": "assets/ex10.webp",
+  "leg_press_1": "assets/ex11.webp",
+  "leg_press_2": "assets/ex12.webp",
+  "shoulder_press_1": "assets/ex13.webp",
+  "shoulder_press_2": "assets/ex14.webp",
+  "biceps_curl_1": "assets/ex15.webp",
+  "biceps_curl_2": "assets/ex16.webp",
+  "assisted_dips_1": "assets/ex17.webp",
+  "assisted_dips_2": "assets/ex18.webp",
+};
+
+
+// ========================
+// DATA
+// ========================
+
+// Shared walk/abs helpers — inserted at start/end of every workout
+const _WALK = n => ({ id:`w${n}_walk`, name:'הליכה על ההליכון 20 דק׳', emoji:'🏃', muscle:'קרדיו', category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳', cardio:true,  walkData:true, tipKey:'treadmill_walk' });
+const _ABS  = n => ({ id:`w${n}_abs`,  name:'כפיפות בטן',               emoji:'🧠', muscle:'ליבה',   category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',     cardio:false,              tipKey:'abs_crunch'     });
+
+const DEFAULT_EXERCISES = {
+  1: [
+    _WALK(1),
+    { id:'w1_1', name:'לחיצת חזה במכונה',        emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'chest_press_machine' },
+    { id:'w1_2', name:'לחיצת כתפיים משקולות',    emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false, tipKey:'dumbbell_shoulder_press' },
+    { id:'w1_3', name:'הרחקת זרועות לצדדים',     emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
+    { id:'w1_4', name:'פולי עליון (גב)',          emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
+    { id:'w1_5', name:'פלאנק + הליכה בשיפוע',   emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'         },
+    _ABS(1),
+  ],
+  2: [
+    _WALK(2),
+    { id:'w2_1', name:'חתירה במכונה',             emoji:'🔙', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'    },
+    { id:'w2_2', name:'פולי עליון באחיזה צרה',   emoji:'🔝', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'lat_pulldown' },
+    { id:'w2_3', name:'כפיפת מרפקים במוט W',     emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'biceps_curl'      },
+    { id:'w2_4', name:'פשיטת מרפקים בחבל',       emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'10–12',     cardio:false, tipKey:'triceps_pushdown' },
+    { id:'w2_5', name:'הרמת ברכיים בתלייה',      emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true,  tipKey:'hanging_knee_raises' },
+    _ABS(2),
+  ],
+  3: [
+    _WALK(3),
+    { id:'w3_1', name:'Leg Press (הרגיל)',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'leg_press_horizontal' },
+    { id:'w3_2', name:'Leg Extension',            emoji:'🦵', muscle:'רגליים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'leg_extension'        },
+    { id:'w3_3', name:'Face Pulls (כתף אחורית)', emoji:'🎯', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'face_pull' },
+    { id:'w3_4', name:'Leg Curl',                 emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'leg_curl' },
+    { id:'w3_5', name:'הליכה מהירה 20 דק׳',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(3),
+  ],
+  4: [
+    _WALK(4),
+    { id:'w4_1', name:'Assisted Dips (חזה/ידיים)', emoji:'💥', muscle:'חזה',   category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips'  },
+    { id:'w4_2', name:'לחיצת חזה בשיפוע חיובי', emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
+    { id:'w4_3', name:'הרחקת זרועות בכבלים',    emoji:'💪', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise'  },
+    { id:'w4_4', name:'חתירה עם משקולת יד',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'single_arm_row' },
+    { id:'w4_5', name:'הליכה בשיפוע 6%',        emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(4),
+  ],
+  5: [
+    _WALK(5),
+    { id:'w5_1', name:'פשיטת מרפקים מעבר לראש', emoji:'💥', muscle:'טריצפס',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'overhead_triceps' },
+    { id:'w5_2', name:'כפיפת מרפקים (Hammer)',  emoji:'💪', muscle:'ביצפס',   category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'hammer_curls'     },
+    { id:'w5_3', name:'לחיצת כתפיים במכונה',   emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w5_4', name:'פולי עליון (גב)',         emoji:'🔝', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'     },
+    { id:'w5_5', name:'בטן "אופניים"',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'20',        cardio:true  },
+    _ABS(5),
+  ],
+  6: [
+    _WALK(6),
+    { id:'w6_1', name:'Angled Leg Press',        emoji:'🦵', muscle:'רגליים',  category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'angled_leg_press'      },
+    { id:'w6_2', name:'Chest Press',             emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'chest_press_machine'   },
+    { id:'w6_3', name:'Shoulder Press',          emoji:'🏋️', muscle:'כתפיים',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false, tipKey:'shoulder_press_machine' },
+    { id:'w6_4', name:'חתירה בישיבה במכונה',   emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
+    { id:'w6_5', name:'פלאנק צידי',             emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'1 דקה',    cardio:true,  tipKey:'plank'     },
+    _ABS(6),
+  ],
+  7: [
+    _WALK(7),
+    { id:'w7_1', name:'לחיצת חזה משקולות',      emoji:'🏋️', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w7_2', name:'לחיצת כתפיים בישיבה',   emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'10',        cardio:false, tipKey:'dumbbell_shoulder_press' },
+    { id:'w7_3', name:'כפיפת מרפקים בישיבה',   emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false, tipKey:'biceps_curl' },
+    { id:'w7_4', name:'מכרעים (Lunges) סטטיים', emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w7_5', name:'הליכה מהירה',            emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(7),
+  ],
+  8: [
+    _WALK(8),
+    { id:'w8_1', name:'פולי עליון רחב',         emoji:'🔝', muscle:'גב',      category:'כוח',           weight:'', sets:3, reps:'12',        cardio:false, tipKey:'lat_pulldown'  },
+    { id:'w8_2', name:'לחיצת חזה בשיפוע',      emoji:'🏋️', muscle:'חזה',     category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'incline_press'  },
+    { id:'w8_3', name:'פרפר במכונה (Pec Deck)', emoji:'🦋', muscle:'חזה',     category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w8_4', name:'פולי תחתון (חתירה)',     emoji:'🔙', muscle:'גב',      category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row' },
+    { id:'w8_5', name:'Dead-Bug לבטן',          emoji:'🧠', muscle:'ליבה',    category:'ליבה ואירובי', weight:'—', sets:3, reps:'15',        cardio:true  },
+    _ABS(8),
+  ],
+  9: [
+    _WALK(9),
+    { id:'w9_1', name:'הרחקת זרועות (דאמבלים)', emoji:'💪', muscle:'כתפיים',  category:'כוח',           weight:'', sets:3, reps:'15',        cardio:false, tipKey:'lateral_raise' },
+    { id:'w9_2', name:'לחיצת ארנולד (כתפיים)', emoji:'🏋️', muscle:'כתפיים',  category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'arnold_press'  },
+    { id:'w9_3', name:'כפיפת מרפקים בכבלים',  emoji:'💪', muscle:'ביצפס',   category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false, tipKey:'biceps_curl' },
+    { id:'w9_4', name:'פשיטת מרפקים במוט ישר', emoji:'💥', muscle:'טריצפס',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false },
+    { id:'w9_5', name:'הליכה (אינטרוולים)',     emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'20 דק׳',   cardio:true  },
+    _ABS(9),
+  ],
+  10: [
+    _WALK(10),
+    { id:'w10_1', name:'Assisted Dips',          emoji:'💥', muscle:'חזה',     category:'כוח',           weight:'', sets:3, reps:'8–10',      cardio:false, tipKey:'assisted_dips' },
+    { id:'w10_2', name:'חתירה במכונה',           emoji:'🔙', muscle:'גב',      category:'ניפוח',         weight:'', sets:3, reps:'12',        cardio:false, tipKey:'cable_row'     },
+    { id:'w10_3', name:'פשיטת מרפקים בחבל',     emoji:'💥', muscle:'טריצפס',  category:'ידיים/כתפיים', weight:'', sets:3, reps:'12',        cardio:false, tipKey:'triceps_pushdown' },
+    { id:'w10_4', name:'Leg Press',              emoji:'🦵', muscle:'רגליים',  category:'רגליים/גב',     weight:'', sets:3, reps:'12',        cardio:false, tipKey:'leg_press_horizontal' },
+    { id:'w10_5', name:'הליכה מאומצת 25 דק׳',  emoji:'🚶', muscle:'קרדיו',   category:'ליבה ואירובי', weight:'—', sets:1, reps:'25 דק׳',   cardio:true  },
+    _ABS(10),
+  ],
+};
+
+// ========================
+// META
+// ========================
+const WORKOUT_META = [
+  { num:1,  name:'חזה וכתפיים Classic',   color:'#3b82f6', emoji:'🏋️' },
+  { num:2,  name:'משיכה וזרועות',          color:'#22c55e', emoji:'🔙' },
+  { num:3,  name:'רגליים וכתף אחורית',    color:'#f59e0b', emoji:'🦵' },
+  { num:4,  name:'Upper Body Power',       color:'#3b82f6', emoji:'⚡' },
+  { num:5,  name:'נפח זרועות (Arms Day)', color:'#a855f7', emoji:'💪' },
+  { num:6,  name:'Full Body Machine',      color:'#14b8a6', emoji:'🔧' },
+  { num:7,  name:'משקולות חופשיות',        color:'#f97316', emoji:'🏋️' },
+  { num:8,  name:'גב וחזה (V-Shape)',       color:'#22c55e', emoji:'🎯' },
+  { num:9,  name:'כתפיים וידיים ממוקד',   color:'#a855f7', emoji:'🎯' },
+  { num:10, name:'סיכום שבוע – Mixed',    color:'#14b8a6', emoji:'🌟' },
+];
+
+const CAT_COLORS = {
+  'כוח':           { bg:'rgba(59,130,246,0.15)',  color:'#3b82f6', border:'rgba(59,130,246,0.3)'  },
+  'ניפוח':         { bg:'rgba(168,85,247,0.15)',  color:'#a855f7', border:'rgba(168,85,247,0.3)'  },
+  'ידיים/כתפיים':  { bg:'rgba(245,158,11,0.15)',  color:'#f59e0b', border:'rgba(245,158,11,0.3)'  },
+  'רגליים/גב':     { bg:'rgba(34,197,94,0.15)',   color:'#22c55e', border:'rgba(34,197,94,0.3)'   },
+  'ליבה ואירובי':  { bg:'rgba(20,184,166,0.15)',  color:'#14b8a6', border:'rgba(20,184,166,0.3)'  },
+};
+
+// ========================
+// EXERCISE TIPS LIBRARY
+// ========================
+const EXERCISE_TIPS = {
+  // ── חזה ──
+  incline_press: {
+    why:     'בונה את החלק העליון של החזה ומעניק מראה "מלא" מתחת לעצם הבריח.',
+    youtube: 'https://www.youtube.com/watch?v=8iPEnn-ltC8',
+    tip:     'אל תוריד את המוט/משקולות לצוואר, אלא לחלק העליון של החזה.'
+  },
+  chest_press_machine: {
+    why:     'שרירי החזה, הכתף הקדמית והיד האחורית.',
+    youtube: 'https://www.youtube.com/watch?v=nwE_XvMAn-M',
+    tip:     'כוון את המושב כך שהידיות יהיו בגובה מרכז החזה. שמור על שכמות צמודות למשענת ודחוף קדימה.'
+  },
+  assisted_dips: {
+    why:     'תרגיל עוצמתי לחזה התחתון וליד האחורית (Triceps).',
+    youtube: 'https://www.youtube.com/watch?v=yZ8HnS9IdmM',
+    tip:     'הנח ברכיים על הפלטה. רד למטה עד שהזרוע מקבילה לרצפה, ורכון מעט קדימה כדי להפעיל יותר חזה.'
+  },
+  // ── כתפיים ──
+  lateral_raise: {
+    why:     'התרגיל מספר 1 לבניית רוחב כתפיים (הכתף הצידית).',
+    youtube: 'https://www.youtube.com/watch?v=PzsMitRIn84',
+    tip:     'דמיין שאתה שופך מים מקנקנים בסוף התנועה. אל תרים מעבר לגובה הכתף.'
+  },
+  face_pull: {
+    why:     'משפר יציבה, בונה כתף אחורית ומבליט את המראה הבריא והזקוף.',
+    youtube: 'https://www.youtube.com/watch?v=rep-qVOkqgk',
+    tip:     'משוך את החבל לכיוון המצח ולא לכיוון הסנטר.'
+  },
+  arnold_press: {
+    why:     'תרגיל כתפיים דינמי שמפעיל את כל חלקי הכתף בזכות הסיבוב.',
+    youtube: 'https://www.youtube.com/watch?v=6Z15_Wdxp6M',
+    tip:     'בצע את הסיבוב בצורה חלקה, אל תמהר.'
+  },
+  shoulder_press_machine: {
+    why:     'כתפיים ויד אחורית. המפתח למראה הרחב שאתה רוצה.',
+    youtube: 'https://www.youtube.com/watch?v=WvLMauqrnK8',
+    tip:     'וודא שהמרפקים לא בורחים רחוק מדי אחורה. דחוף למעלה עד יישור כמעט מלא.'
+  },
+  dumbbell_shoulder_press: {
+    why:     'מתמקד בכתף הקדמית והצידית, ועובד גם על היד האחורית (Triceps).',
+    youtube: 'https://www.youtube.com/watch?v=qEwK6jnzpxs',
+    howto: [
+      'כוון את משענת הספסל לזווית כמעט 90° עם שיפוע קל אחורה – מוריד עומס מהגב התחתון.',
+      'הרם את המשקולות לגובה הכתפיים. מרפקים מעט לפני קו הגוף, לא פתוחים מדי לצדדים.',
+      'דחוף למעלה בתנועת קשת רחבה עד שהמשקולות קרובות אחת לשנייה מעל הראש. אל תנעל מרפקים בסוף.',
+      'הורד לאט ובשליטה עד גובה האוזניים/סנטר, וחזור חלילה.',
+    ],
+    tip:     '📏 בגובה 1.90 מ׳: שמור על תנועה חלקה, אל תפגיש משקולות בכוח למעלה. אם הגב מתקשת – המשקל כבד מדי.'
+  },
+  // ── גב ──
+  lat_pulldown: {
+    why:     'מייצר את ה-V בגב שגורם למותניים להיראות צרות יותר.',
+    youtube: 'https://www.youtube.com/watch?v=CAwf7n6Luuc',
+    tip:     'משוך עם המרפקים למטה, לא עם כפות הידיים.'
+  },
+  cable_row: {
+    why:     'בונה עובי בגב ומשפר את היציבה (מונע כתפיים שמוטות קדימה).',
+    youtube: 'https://www.youtube.com/watch?v=GZbfZ033f74',
+    tip:     'שמור על גב ישר ואל תתנדנד קדימה ואחורה עם המותן.'
+  },
+  single_arm_row: {
+    why:     'בונה את "רוחב" הגב (צורת V) ומאזן תרגילי לחיצה – מונע כתפיים שמוטות קדימה. עובד על ה-Lats, הכתף האחורית, השכמות והיד הקדמית.',
+    youtube: 'https://www.youtube.com/watch?v=pYcpY20QaE8',
+    howto: [
+      'העמידה: הנח יד אחת וברך אחת על ספסל שטוח. הרגל השנייה יציבה על הרצפה. המשקולת תלויה מטה בצורה רפויה.',
+      'הגב: חייב להיות ישר ומקביל לרצפה – כמו שולחן. אל תעגל את הגב!',
+      'המשיכה: משוך את המשקולת לכיוון המותן (לא לכיוון החזה). דמיין שמישהו מושך את המרפק שלך לתקרה.',
+      'הכיווץ: בסוף התנועה – הצמד את השכמה לכיוון עמוד השדרה.',
+      'החזרה: הורד לאט עד למתיחה מלאה של הגב.',
+    ],
+    tip:     '📏 1.90 מ׳: אם ברך על ספסל יוצרת עומס בגב, נסה "Tripod". כשהמשקל כבד – רק הזרוע והשכמה זזות, שאר הגוף יצוק. 🔁 לתיקון חוסר איזון: תמיד התחל עם הצד החלש ועשה עם הצד החזק בדיוק אותו מספר חזרות – לסימטריה מלאה.'
+  },
+  // ── ידיים ──
+  overhead_triceps: {
+    why:     'עובד על "הראש הארוך" של היד האחורית – זה מה שנותן ליד נפח מרשים.',
+    youtube: 'https://www.youtube.com/watch?v=-Vyt2QdsR7E',
+    tip:     'שמור על המרפקים קרובים לראש, אל תיתן להם "לברוח" לצדדים.'
+  },
+  triceps_pushdown: {
+    why:     'היד האחורית (Triceps) – קריטי לחיזוק הידיים.',
+    youtube: 'https://www.youtube.com/watch?v=vB5OHsJ3EME',
+    tip:     'הצמד מרפקים לצידי הגוף. משוך את החבל למטה ופתח את הקצוות לצדדים בסוף התנועה.'
+  },
+  hammer_curls: {
+    why:     'בונה גם את היד הקדמית וגם את האמה, למראה זרוע עבה וחזקה.',
+    youtube: 'https://www.youtube.com/watch?v=TwD-YGVP4Bk',
+    tip:     'אל תשתמש בתנופה של הגוף (Cheat curls). רק המרפק זז.'
+  },
+  biceps_curl: {
+    why:     'היד הקדמית (ה"בייספס").',
+    youtube: 'https://www.youtube.com/watch?v=QwSByv2p_p0',
+    tip:     'שמור על גוף יציב ומרפקים מקובעים במקום. הרם את המשקל לכיוון הכתפיים והורד לאט.'
+  },
+  // ── רגליים ──
+  angled_leg_press: {
+    why:     'עובד על הארבע-ראשי (קדמת הירך) והישבן.',
+    youtube: 'https://www.youtube.com/watch?v=IZxyjW7MPJQ',
+    tip:     'שב עם גב צמוד למשענת, רגליים ברוחב הכתפיים על הפלטה. הורד בשליטה עד 90° – בלי לנעול ברכיים בסוף!'
+  },
+  leg_press_horizontal: {
+    why:     'דומה ללחיצה בזווית, אך העומס על הגב התחתון קטן יותר.',
+    youtube: 'https://www.youtube.com/watch?v=8EMbBf_8O7U',
+    tip:     'דחיפת הפלטה ישר קדימה. חשוב מאוד לא לנעול ברכיים בחוזקה בסוף התנועה.'
+  },
+  leg_extension: {
+    why:     'בידוד של הארבע-ראשי (קדמת הירך).',
+    youtube: 'https://www.youtube.com/watch?v=YyvSfVLYdqo',
+    tip:     'שב ישר, הצמד את הגב למשענת. הרם את הרגליים עד שהן ישרות, החזק לשנייה ולמעלה והורד לאט.'
+  },
+  leg_curl: {
+    why:     'מתמקד ב"המסטרינג" (החלק האחורי של הירך).',
+    youtube: 'https://www.youtube.com/watch?v=ELOCsoDSXrg',
+    tip:     'וודא שהכרית יושבת מעט מעל העקב. כווץ את השריר, הורד לאט והחזר באיטיות.'
+  },
+  // ── ליבה ואירובי ──
+  hanging_knee_raises: {
+    why:     'מתמקד בשרירי הבטן (דגש על בטן תחתונה) ובמכופפי הירך. בונוס: כוח אחיזה ויציבות חגורת הכתפיים.',
+    youtube: 'https://www.youtube.com/watch?v=RlwWudXNIsQ',
+    howto: [
+      'האחיזה: תלה על מתח (או על Captain\'s Chair אם קשה). כפות הידיים פונות קדימה.',
+      'מצב מוצא: גוף ישר ורפוי, שכמות "נעולות" מעט מטה – אל תיתן לכתפיים להיצמד לאוזניים.',
+      'התנועה: הוצא אוויר, כווץ בטן והרם ברכיים לכיוון החזה. המטרה: "לגלגל" את האגן פנימה, לא רק להרים רגליים.',
+      'הירידה: הורד את הרגליים לאט ובשליטה מלאה. אל תיתן להן ליפול – זה החלק הכי חשוב!',
+    ],
+    tip:     '📏 1.90 מ׳ + גיל 55: המנופים הארוכים גורמים לנדנוד – ירידה איטית ומבוקרת תמנע אותו. אם מתחיל להתנדנד, עצור, ייצב ותמשיך.'
+  },
+  plank: {
+    why:     'מחזק את הליבה מבפנים ועוזר "להחזיק" את הבטן פנימה ליציבה טובה יותר.',
+    youtube: 'https://www.youtube.com/watch?v=ASdvN_XEl_c',
+    tip:     'כווץ את הישבן ואת הבטן חזק – אל תיתן לגב התחתון לשקוע.'
+  },
+  abs_crunch: {
+    why:     'מחזק את שרירי הבטן וחיזוק הליבה לתמיכה בכל שאר התרגילים.',
+    youtube: 'https://www.youtube.com/watch?v=Xyd_fa5zoEU',
+    tip:     'כווץ את שרירי הבטן בזמן העלייה. אל תמשוך את הצוואר – הכוח מגיע מהבטן בלבד.'
+  },
+  treadmill_walk: {
+    why:     'הליכה בשיפוע שורפת יותר קלוריות מהליכה רגילה ושומרת על הברכיים טוב יותר מריצה.',
+    youtube: 'https://www.youtube.com/watch?v=7p_uA0v-2Xk',
+    tip:     'נסה שיפוע 3–5% עם מהירות 5–6 קמ"ש. שמור על גב זקוף ואל תיתלה בידיות.'
+  },
+};
+
+let currentWorkoutNum = 1;
+
+// State
+let state = loadState();
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('workout_shai_v3');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return {
+    exercises: JSON.parse(JSON.stringify(DEFAULT_EXERCISES)),
+    workouts: {},
+    currentWeek: 1,
+    weeklyProgress: {},
+    history: []
+  };
+}
+
+function saveState() {
+  localStorage.setItem('workout_shai_v3', JSON.stringify(state));
+}
+
+function getTodayKey() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function getTodayWorkout(num) {
+  const k = getTodayKey();
+  if (!state.workouts[num]) state.workouts[num] = {};
+  if (!state.workouts[num][k]) {
+    state.workouts[num][k] = { sets: {}, notes: {}, cardio: {} };
+    (state.exercises[num] || []).forEach(ex => {
+      if (!ex.cardio) {
+        state.workouts[num][k].sets[ex.id] = Array.from({length: ex.sets}, () => ({
+          reps: ex.reps, weight: ex.weight || '', done: false
+        }));
+      }
+      state.workouts[num][k].notes[ex.id] = '';
+    });
+  }
+  return state.workouts[num][k];
+}
+
+// ========================
+// RENDER
+// ========================
+
+function renderExercises(num) {
+  const container = document.getElementById('exercises-active');
+  const workout = getTodayWorkout(num);
+  const meta = WORKOUT_META.find(w => w.num === num);
+  container.innerHTML = '';
+
+  // Render workout header
+  const headerContainer = document.getElementById('activeWorkoutHeader');
+  headerContainer.innerHTML = `
+    <div class="workout-header" style="background:linear-gradient(135deg,${meta.color}22 0%,${meta.color}08 100%);border:1px solid ${meta.color}44;margin-bottom:20px;border-radius:var(--radius);padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="workout-label">אימון ${num} מתוך 10</div>
+        <div class="workout-title">${meta.emoji} ${meta.name}</div>
+      </div>
+      <div class="workout-progress-ring">
+        <svg width="64" height="64" class="ring">
+          <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="6"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#ffffff" stroke-width="6"
+            stroke-dasharray="163.4" stroke-dashoffset="163.4" id="ringActive" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-text" id="ringTextActive">0%</div>
+      </div>
+    </div>`;
+
+  (state.exercises[num] || []).forEach(ex => {
+    const isCardio = ex.cardio;
+    const sets = workout.sets[ex.id] || [];
+    const doneCount = sets.filter(s => s.done).length;
+    const allDone = sets.length > 0 && doneCount === sets.length;
+    const partialDone = doneCount > 0 && !allDone;
+
+    let badgeClass = 'badge-none', badgeText = 'לא התחלת';
+    if (allDone) { badgeClass = 'badge-done'; badgeText = '✓ הושלם'; }
+    else if (partialDone) { badgeClass = 'badge-partial'; badgeText = doneCount + '/' + sets.length + ' סטים'; }
+
+    const cat = CAT_COLORS[ex.category] || {};
+    const catStyle = cat.bg ? `background:${cat.bg};color:${cat.color};border:1px solid ${cat.border}` : '';
+
+    const card = document.createElement('div');
+    card.className = 'exercise-card' + (allDone ? ' completed' : '');
+    card.id = 'card-' + num + '-' + ex.id;
+
+    const imgSrc = '';
+    const img2Src = '';
+
+    let setsHTML = '';
+    if (isCardio) {
+      const cardioData = workout.cardio || {};
+      const isDone = cardioData[ex.id+'_done'];
+      if (ex.walkData) {
+        // Treadmill walk — speed + incline fields
+        setsHTML = `
+          <div class="cardio-card walk-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
+            <div class="cardio-title">🏃 הליכה על ההליכון — 20 דקות חימום</div>
+            <div class="walk-fields">
+              <div class="walk-field-group">
+                <div class="walk-field-label">🚀 מהירות</div>
+                <div class="walk-field-row">
+                  <input type="number" step="0.5" min="1" max="15" class="duration-input walk-input"
+                    placeholder="6.0"
+                    value="${cardioData[ex.id+'_speed'] || ''}"
+                    oninput="setCardio(${num},'${ex.id}','speed',this.value)">
+                  <span class="walk-unit">קמ/ש</span>
+                </div>
+              </div>
+              <div class="walk-field-group">
+                <div class="walk-field-label">⛰️ שיפוע</div>
+                <div class="walk-field-row">
+                  <input type="number" step="0.5" min="0" max="15" class="duration-input walk-input"
+                    placeholder="3.0"
+                    value="${cardioData[ex.id+'_incline'] || ''}"
+                    oninput="setCardio(${num},'${ex.id}','incline',this.value)">
+                  <span class="walk-unit">%</span>
+                </div>
+              </div>
+              <button class="cardio-done-btn ${isDone ? 'done' : ''}" style="align-self:flex-end"
+                onclick="setCardio(${num},'${ex.id}','done',null,this)">
+                ${isDone ? '✓ בוצע!' : 'סמן בוצע'}
+              </button>
+            </div>
+          </div>`;
+      } else {
+        setsHTML = `
+          <div class="cardio-card" style="margin:0;background:var(--bg);border:1px solid var(--border)">
+            <div class="cardio-title">${ex.emoji} ${ex.name}</div>
+            <div class="cardio-row">
+              <span style="color:var(--text-dim);font-size:0.85rem">משך:</span>
+              <input type="number" class="duration-input" placeholder="דק׳"
+                value="${cardioData[ex.id+'_dur'] || ''}"
+                oninput="setCardio(${num},'${ex.id}','dur',this.value)">
+              <span style="color:var(--text-dim);font-size:0.85rem">דקות</span>
+              <button class="cardio-done-btn ${isDone ? 'done' : ''}"
+                onclick="setCardio(${num},'${ex.id}','done',null,this)">
+                ${isDone ? '✓ בוצע!' : 'סמן בוצע'}
+              </button>
+            </div>
+          </div>`;
+      }
+    } else {
+      setsHTML = `<div class="sets-label">סטים</div><div class="sets-grid">`;
+      sets.forEach((s, i) => {
+        setsHTML += `
+          <div class="set-row ${s.done ? 'set-done' : ''}" id="setrow-${num}-${ex.id}-${i}">
+            <div class="set-number">${i+1}</div>
+            <div class="set-fields">
+              <div class="field-group">
+                <div class="field-label">משקל</div>
+                <input type="text" class="field-input" value="${s.weight}"
+                  oninput="updateSet(${num},'${ex.id}',${i},'weight',this.value)" placeholder="ק״ג">
+              </div>
+              <div class="field-group">
+                <div class="field-label">חזרות</div>
+                <input type="number" class="field-input" value="${s.reps}"
+                  oninput="updateSet(${num},'${ex.id}',${i},'reps',this.value)" placeholder="חז׳">
+              </div>
+            </div>
+            <button class="set-check ${s.done ? 'checked' : ''}" onclick="toggleSet(${num},'${ex.id}',${i},this)">
+              ${s.done ? '✓' : ''}
+            </button>
+          </div>`;
+      });
+      setsHTML += '</div>';
+    }
+
+    // Build tip panel if this exercise has tips
+    const tipData = ex.tipKey ? EXERCISE_TIPS[ex.tipKey] : null;
+    const tipBtn = tipData
+      ? `<button class="tip-btn" onclick="event.stopPropagation();toggleTip(${num},'${ex.id}')">💡 הסבר</button>`
+      : '';
+    const howtoHTML = (tipData && tipData.howto)
+      ? `<ol class="tip-howto">${tipData.howto.map((s,i) =>
+          `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>`
+      : '';
+    // YouTube editor — user pastes their own link
+    const _tk = ex.tipKey || '';
+    const _savedUrl = ytUrls[_tk] || (tipData ? tipData.youtube||'' : '');
+    const _vid = _savedUrl ? extractYtId(_savedUrl) : null;
+    const _thumbHTML = _vid
+      ? `<a class="tip-youtube-thumb" href="https://www.youtube.com/watch?v=${_vid}" target="_blank" rel="noopener">
+           <img src="https://img.youtube.com/vi/${_vid}/hqdefault.jpg"
+                onerror="ytThumbFallback(this,'${_vid}','https://www.youtube.com/watch?v=${_vid}')">
+           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
+         </a>` : '';
+    const youtubeHTML = _tk ? `
+      <div class="tip-yt-editor">
+        <input type="url" class="tip-yt-input" id="ytinput-${_tk}"
+               placeholder="הדבק קישור YouTube..." value="${_savedUrl}">
+        <button class="tip-yt-save" onclick="saveYtUrl('${_tk}')">▶ הצג</button>
+      </div>
+      <div id="ytpreview-${_tk}">${_thumbHTML}</div>` : '';
+    const tipPanel = tipData ? `
+      <div class="tip-panel">
+        <div class="tip-why"><strong>למה זה חשוב?</strong> ${tipData.why}</div>
+        ${howtoHTML}
+        ${youtubeHTML}
+        <div class="tip-coach">${tipData.tip}</div>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="exercise-header" onclick="toggleCard(${num},'${ex.id}')">
+        <div style="width:70px;height:52px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0">${ex.emoji}</div>
+        <div class="exercise-info">
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-meta">
+            <span class="exercise-badge" style="font-size:0.68rem;padding:3px 8px;${catStyle}">${ex.category}</span>
+            ${!isCardio ? ` · ${ex.weight||'—'} ק״ג · ${ex.sets}×${ex.reps}` : ''}
+          </div>
+        </div>
+        ${tipBtn}
+        <span class="exercise-badge ${badgeClass}">${badgeText}</span>
+        <span class="expand-icon">⌄</span>
+      </div>
+      ${tipPanel}
+      <div class="exercise-body">
+        ${setsHTML}
+        <div class="notes-area">
+          <textarea class="notes-input" placeholder="הערות... (כאבים, קשיים, תחושות)"
+            oninput="updateNotes(${num},'${ex.id}',this.value)">${(workout.notes||{})[ex.id]||''}</textarea>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+
+  updateRings();
+}
+
+function toggleCard(num, id) {
+  document.getElementById('card-' + num + '-' + id)?.classList.toggle('open');
+}
+
+function toggleTip(num, id) {
+  document.getElementById('card-' + num + '-' + id)?.classList.toggle('tip-open');
+}
+
+// ========================
+// YOUTUBE URL STORAGE
+// ========================
+// ytUrls lives inside state so it syncs automatically to the cloud
+// One-time migration: move old standalone key into state
+if (!state.ytUrls) {
+  try {
+    const old = JSON.parse(localStorage.getItem('workout_yt_urls_v1') || '{}');
+    state.ytUrls = old;
+    saveState();
+    localStorage.removeItem('workout_yt_urls_v1');
+  } catch(e) { state.ytUrls = {}; }
+}
+let ytUrls = state.ytUrls;
+
+function extractYtId(url) {
+  return url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
+}
+
+function saveYtUrl(tipKey) {
+  const input = document.getElementById('ytinput-' + tipKey);
+  if (!input) return;
+  const raw = input.value.trim();
+  const vid = extractYtId(raw);
+  const url = vid ? 'https://www.youtube.com/watch?v=' + vid : '';
+  if (raw && !vid) { showToast('⚠️ קישור לא תקין — נסה שוב'); return; }
+  ytUrls[tipKey] = url;
+  state.ytUrls = ytUrls;
+  saveState();
+  // Update preview in place
+  const preview = document.getElementById('ytpreview-' + tipKey);
+  if (preview) {
+    preview.innerHTML = vid
+      ? `<a class="tip-youtube-thumb" href="${url}" target="_blank" rel="noopener">
+           <img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg"
+                onerror="ytThumbFallback(this,'${vid}','${url}')">
+           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
+         </a>` : '';
+  }
+  input.value = url;
+  showToast(vid ? '🎬 קישור נשמר!' : '🗑️ קישור נמחק');
+}
+
+function ytThumbFallback(img, vid, url) {
+  // hqdefault failed → replace entire thumb with text button
+  const a = img.closest('a');
+  if (a) {
+    a.outerHTML = `<a class="tip-yt-btn" href="${url}" target="_blank" rel="noopener">▶&nbsp; צפה בהדרכה ב-YouTube</a>`;
+  }
+}
+
+function toggleSet(num, id, idx, btn) {
+  const workout = getTodayWorkout(num);
+  const s = workout.sets[id][idx];
+  s.done = !s.done;
+  btn.classList.toggle('checked');
+  btn.textContent = s.done ? '✓' : '';
+  document.getElementById('setrow-' + num + '-' + id + '-' + idx)?.classList.toggle('set-done', s.done);
+  const sets = workout.sets[id];
+  const doneCount = sets.filter(x => x.done).length;
+  const card = document.getElementById('card-' + num + '-' + id);
+  const statusBadge = card?.querySelector('.exercise-header > .exercise-badge');
+  if (statusBadge) {
+    if (doneCount === sets.length) {
+      statusBadge.className = 'exercise-badge badge-done'; statusBadge.textContent = '✓ הושלם';
+      card.classList.add('completed');
+    } else if (doneCount > 0) {
+      statusBadge.className = 'exercise-badge badge-partial'; statusBadge.textContent = doneCount + '/' + sets.length + ' סטים';
+      card.classList.remove('completed');
+    } else {
+      statusBadge.className = 'exercise-badge badge-none'; statusBadge.textContent = 'לא התחלת';
+      card.classList.remove('completed');
+    }
+  }
+  updateRings();
+  saveState();
+}
+
+function updateSet(num, id, idx, field, val) {
+  const workout = getTodayWorkout(num);
+  if (workout.sets[id]?.[idx]) workout.sets[id][idx][field] = val;
+  saveState();
+}
+
+function updateNotes(num, id, val) {
+  const workout = getTodayWorkout(num);
+  if (!workout.notes) workout.notes = {};
+  workout.notes[id] = val;
+  saveState();
+}
+
+function setCardio(num, id, field, val, btn) {
+  const workout = getTodayWorkout(num);
+  if (!workout.cardio) workout.cardio = {};
+  if (field === 'dur') {
+    workout.cardio[id+'_dur'] = val;
+  } else if (field === 'done') {
+    workout.cardio[id+'_done'] = !workout.cardio[id+'_done'];
+    if (btn) { btn.classList.toggle('done'); btn.textContent = workout.cardio[id+'_done'] ? '✓ בוצע!' : 'סמן בוצע'; }
+  }
+  saveState();
+  updateRings();
+}
+
+function updateRings() {
+  const num = currentWorkoutNum;
+  const workout = getTodayWorkout(num);
+  let total = 0, done = 0;
+  (state.exercises[num] || []).forEach(ex => {
+    if (!ex.cardio && workout.sets[ex.id]) {
+      total += workout.sets[ex.id].length;
+      done += workout.sets[ex.id].filter(s => s.done).length;
+    }
+  });
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const offset = 163.4 * (1 - pct/100);
+  const ring = document.getElementById('ringActive');
+  const text = document.getElementById('ringTextActive');
+  if (ring) ring.style.strokeDashoffset = offset;
+  if (text) text.textContent = pct + '%';
+  const chip = document.getElementById('progressCurrent');
+  if (chip) chip.textContent = pct + '%';
+}
+
+// ========================
+// ADD EXERCISE
+// ========================
+function addExercise() {
+  const num = currentWorkoutNum;
+  const name = document.getElementById('addNameActive').value.trim();
+  const weight = document.getElementById('addWeightActive').value.trim();
+  const setsReps = document.getElementById('addSetsActive').value.trim() || '3 × 10–12';
+  const category = document.getElementById('addGroupActive').value || 'כוח';
+  if (!name) { showToast('🚨 שכחת לרשום שם תרגיל'); return; }
+  const parts = setsReps.split(/[×x]/);
+  const numSets = parseInt(parts[0]) || 3;
+  const reps = (parts[1] || '10–12').trim();
+  const id = 'custom_' + Date.now();
+  const ex = { id, name, emoji:'⚡', muscle:category, category, weight:weight||'?', sets:numSets, reps, images:[], cardio:false };
+  if (!state.exercises[num]) state.exercises[num] = [];
+  state.exercises[num].push(ex);
+  const workout = getTodayWorkout(num);
+  workout.sets[id] = Array.from({length:numSets}, () => ({ reps, weight:weight||'', done:false }));
+  workout.notes[id] = '';
+  saveState();
+  renderExercises(num);
+  ['addNameActive','addWeightActive','addSetsActive'].forEach(fid => { const el = document.getElementById(fid); if (el) el.value = ''; });
+  document.getElementById('addGroupActive').value = '';
+  showToast('✅ תרגיל נוסף: ' + name);
+}
+
+// ========================
+// SAVE & RESET
+// ========================
+function saveWorkout() {
+  const num = currentWorkoutNum;
+  saveState();
+  const workout = getTodayWorkout(num);
+  const k = getTodayKey();
+  if (!state.history) state.history = [];
+  const existing = state.history.findIndex(h => h.date === k && h.type === num);
+  let totalSets = 0, doneSets = 0;
+  (state.exercises[num] || []).forEach(ex => {
+    if (!ex.cardio && workout.sets[ex.id]) {
+      totalSets += workout.sets[ex.id].length;
+      doneSets += workout.sets[ex.id].filter(s => s.done).length;
+    }
+  });
+  const meta = WORKOUT_META.find(w => w.num === num);
+  const entry = { date:k, type:num, doneSets, totalSets, label:`אימון ${num} – ${meta?.name||''}` };
+  if (existing >= 0) state.history[existing] = entry;
+  else state.history.unshift(entry);
+  saveState();
+  renderHistory();
+  showToast('💾 נשמר!');
+}
+
+function resetCurrentWorkout() {
+  if (!confirm('לאפס את האימון של היום?')) return;
+  const num = currentWorkoutNum;
+  const k = getTodayKey();
+  if (state.workouts[num]) delete state.workouts[num][k];
+  saveState();
+  renderExercises(num);
+  showToast('🔄 אופס');
+}
+
+// ========================
+// PROGRESS TAB
+// ========================
+function renderProgress() {
+  // Week selector
+  const sel = document.getElementById('weekSelector');
+  sel.innerHTML = '';
+  [1,2,3,4].forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' + (w === state.currentWeek ? ' active' : '');
+    btn.textContent = 'שבוע ' + w;
+    btn.onclick = () => { state.currentWeek = w; saveState(); renderProgress(); };
+    sel.appendChild(btn);
+  });
+  
+  // Table
+  const tbody = document.getElementById('progressTableBody');
+  tbody.innerHTML = '';
+  const allEx = Object.values(state.exercises).flat().filter(ex => !ex.cardio);
+  
+  const wk = state.currentWeek;
+  if (!state.weeklyProgress) state.weeklyProgress = {};
+  if (!state.weeklyProgress[wk]) state.weeklyProgress[wk] = {};
+  
+  allEx.forEach(ex => {
+    if (!state.weeklyProgress[wk][ex.id]) state.weeklyProgress[wk][ex.id] = { weight: ex.weight, reps: ex.reps };
+    const prog = state.weeklyProgress[wk][ex.id];
+    const prevProg = wk > 1 && state.weeklyProgress[wk-1] && state.weeklyProgress[wk-1][ex.id] ? state.weeklyProgress[wk-1][ex.id] : null;
+    
+    let improvBadge = '';
+    if (prevProg) {
+      const prevW = parseFloat(prevProg.weight);
+      const curW = parseFloat(prog.weight);
+      if (!isNaN(prevW) && !isNaN(curW) && curW > prevW) {
+        improvBadge = `<span class="improvement-badge imp-up">+${(curW-prevW).toFixed(1)} ↑</span>`;
+      } else {
+        improvBadge = `<span class="improvement-badge imp-same">—</span>`;
+      }
+    }
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${ex.emoji} ${ex.name}</td>
+      <td><input type="text" class="progress-input-sm" value="${prog.weight}" 
+        oninput="updateProgress(${wk},'${ex.id}','weight',this.value)" placeholder="ק״ג"></td>
+      <td><input type="text" class="progress-input-sm" value="${prog.reps}"
+        oninput="updateProgress(${wk},'${ex.id}','reps',this.value)" placeholder="חז׳"></td>
+      <td>${improvBadge}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateProgress(wk, id, field, val) {
+  if (!state.weeklyProgress[wk]) state.weeklyProgress[wk] = {};
+  if (!state.weeklyProgress[wk][id]) state.weeklyProgress[wk][id] = {};
+  state.weeklyProgress[wk][id][field] = val;
+  saveState();
+}
+
+// ========================
+// HISTORY
+// ========================
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!state.history || state.history.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:0.9rem;padding:16px">עדיין אין אימונים מוקלטים</div>';
+    return;
+  }
+  list.innerHTML = state.history.slice(0, 30).map(h => {
+    const pct = h.totalSets > 0 ? Math.round(h.doneSets/h.totalSets*100) : 0;
+    const d = new Date(h.date);
+    const dateStr = d.toLocaleDateString('he-IL', { weekday:'short', day:'numeric', month:'numeric' });
+    const meta = WORKOUT_META.find(w => w.num === h.type) || { color:'#6b7280', name:'' };
+    const typeColor = meta.color;
+    const wLabel = h.label || `אימון ${h.type} – ${meta.name}`;
+    return `<div class="history-item">
+      <div>
+        <span style="color:${typeColor};font-weight:700">${wLabel}</span>
+        <div class="history-date">${dateStr}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-weight:700;color:${pct===100?'#22c55e':'#f59e0b'}">${pct}%</div>
+        <div style="font-size:0.75rem;color:var(--text-dim)">${h.doneSets}/${h.totalSets} סטים</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ========================
+// TABS
+// ========================
+function initTabs() {
+  const tabsEl = document.getElementById('mainTabs');
+  // Remove any previously injected workout tabs
+  tabsEl.querySelectorAll('[data-workout-tab]').forEach(b => b.remove());
+
+  WORKOUT_META.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.dataset.workoutTab = w.num;
+    btn.innerHTML = `${w.emoji} ${w.num}`;
+    btn.title = w.name;
+    btn.style.setProperty('--wcolor', w.color);
+    btn.addEventListener('click', () => switchToWorkout(w.num));
+    tabsEl.appendChild(btn);
+  });
+
+  // Wire up static tabs (progress, history)
+  tabsEl.querySelectorAll('[data-special]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setActiveTab(btn);
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const sp = btn.dataset.special;
+      const panel = document.getElementById('tab-' + sp);
+      if (panel) panel.classList.add('active');
+      if (sp === 'progress') renderProgress();
+      if (sp === 'history') renderHistory();
+    });
+  });
+}
+
+function setActiveTab(activeBtn) {
+  document.querySelectorAll('#mainTabs .tab-btn').forEach(b => b.classList.remove('active'));
+  activeBtn.classList.add('active');
+}
+
+function switchToWorkout(num) {
+  currentWorkoutNum = num;
+  const meta = WORKOUT_META.find(w => w.num === num);
+
+  // Highlight correct tab
+  const allBtns = document.querySelectorAll('#mainTabs .tab-btn');
+  allBtns.forEach(b => b.classList.remove('active'));
+  const wBtn = document.querySelector(`[data-workout-tab="${num}"]`);
+  if (wBtn) wBtn.classList.add('active');
+
+  // Show workout panel
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-workout-active').classList.add('active');
+
+  // Update workout label in header
+  const labelEl = document.getElementById('currentWorkoutLabel');
+  if (labelEl && meta) labelEl.textContent = `${meta.emoji} ${num}`;
+
+  renderExercises(num);
+  updateRings();
+}
+
+// ========================
+// TOAST
+// ========================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ========================
+// SYNC — Google Apps Script
+// ========================
+const SYNC_URL_KEY  = 'workout_sync_url_v1';
+const SYNC_LAST_KEY = 'workout_sync_last_v1';
+
+function getSyncUrl()  { return localStorage.getItem(SYNC_URL_KEY)  || ''; }
+function getLastSync() { return localStorage.getItem(SYNC_LAST_KEY) || ''; }
+
+function saveSyncUrl() {
+  const url = document.getElementById('syncUrlInput').value.trim();
+  localStorage.setItem(SYNC_URL_KEY, url);
+}
+
+function showSyncModal() {
+  document.getElementById('syncModal').classList.add('open');
+  document.getElementById('syncUrlInput').value = getSyncUrl();
+  _updateSyncStatus();
+}
+
+function closeSyncModal() {
+  document.getElementById('syncModal').classList.remove('open');
+}
+
+function _updateSyncStatus() {
+  const last = getLastSync();
+  const dot1 = document.getElementById('syncDot');
+  const dot2 = document.getElementById('syncDotModal');
+  const label = document.getElementById('syncLastTime');
+  if (last) {
+    const d = new Date(last);
+    const str = d.toLocaleDateString('he-IL', { day:'numeric', month:'numeric' })
+              + ' ' + d.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
+    if (label) label.textContent = 'סנכרון אחרון: ' + str;
+    if (dot1) dot1.classList.add('ok');
+    if (dot2) dot2.classList.add('ok');
+  } else {
+    if (label) label.textContent = 'לא סונכרן עדיין';
+    if (dot1) dot1.classList.remove('ok');
+    if (dot2) dot2.classList.remove('ok');
+  }
+}
+
+function _setSyncBtnState(id, text, cls) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.textContent = text;
+  btn.disabled = (cls === 'loading');
+}
+
+// מחזיר רק את הנתונים הדינמיים לסינכרון — ללא הגדרות תרגילים סטטיות (חוסך ~20KB)
+function _getCloudState() {
+  return {
+    currentWeek:    state.currentWeek,
+    workouts:       state.workouts       || {},
+    weeklyProgress: state.weeklyProgress || {},
+    ytUrls:         state.ytUrls         || {}
+  };
+}
+
+// ממזג נתוני ענן עם הגדרות תרגילים מחדש
+function _applyCloudState(cloud) {
+  state.currentWeek    = cloud.currentWeek    || state.currentWeek;
+  state.workouts       = cloud.workouts       || {};
+  state.weeklyProgress = cloud.weeklyProgress || {};
+  state.ytUrls         = cloud.ytUrls         || {};
+  ytUrls = state.ytUrls;
+}
+
+async function syncToCloud() {
+  saveSyncUrl();
+  const url = getSyncUrl();
+  if (!url) { showToast('⚠️ הכנס כתובת Apps Script'); return; }
+
+  _setSyncBtnState('syncUpBtn', '⏳ שומר...', 'loading');
+  document.getElementById('syncBtn').classList.add('syncing');
+
+  try {
+    // שמור רק נתונים דינמיים (ללא הגדרות תרגילים — חוסך ~20KB)
+    const json   = JSON.stringify(_getCloudState());
+    const CHUNK  = 1500; // תווים לנתח — בטוח לפרמטר URL
+    const chunks = [];
+    for (let i = 0; i < json.length; i += CHUNK) {
+      chunks.push(encodeURIComponent(json.slice(i, i + CHUNK)));
+    }
+    const n = chunks.length;
+
+    for (let i = 0; i < n; i++) {
+      _setSyncBtnState('syncUpBtn', `⏳ ${i + 1}/${n}...`, 'loading');
+      const chunkUrl = url + '?action=chunk&i=' + i + '&n=' + n + '&d=' + chunks[i];
+      const result   = await _jsonpFetch(chunkUrl, 30000);
+      const ok = result && (result.status === 'chunk_ok' || result.status === 'ok');
+      if (!ok) {
+        if (result && result.status === 'error') throw new Error(result.msg);
+        throw new Error('Code.gs ישן — עדכן ופרסם גרסה חדשה ב-Apps Script');
+      }
+    }
+
+    localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
+    _updateSyncStatus();
+    document.getElementById('syncBtn').classList.remove('syncing');
+    document.getElementById('syncBtn').classList.add('success');
+    setTimeout(() => document.getElementById('syncBtn').classList.remove('success'), 3000);
+    showToast('☁️ נשמר בענן!');
+    closeSyncModal();
+  } catch(e) {
+    document.getElementById('syncBtn').classList.remove('syncing');
+    document.getElementById('syncBtn').classList.add('error');
+    setTimeout(() => document.getElementById('syncBtn').classList.remove('error'), 3000);
+    showToast('❌ שגיאת שמירה — ' + e.message);
+  } finally {
+    _setSyncBtnState('syncUpBtn', '⬆️ שמור לענן', '');
+  }
+}
+
+// JSONP — עוקף CORS לחלוטין, עובד על כל דפדפן ורשת מובייל
+function _jsonpFetch(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_jcb' + Date.now();
+    const script  = document.createElement('script');
+    let done = false;
+
+    const timer = setTimeout(() => {
+      if (done) return; done = true;
+      cleanup(); reject(new Error('timeout'));
+    }, timeoutMs || 20000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = (data) => {
+      if (done) return; done = true;
+      cleanup(); resolve(data);
+    };
+
+    script.onerror = () => {
+      if (done) return; done = true;
+      cleanup(); reject(new Error('network error'));
+    };
+
+    const sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep + 'callback=' + cbName + '&nocache=' + Date.now();
+    document.head.appendChild(script);
+  });
+}
+
+async function loadFromCloud() {
+  saveSyncUrl();
+  const url = getSyncUrl();
+  if (!url) { showToast('⚠️ הכנס כתובת Apps Script'); return; }
+
+  _setSyncBtnState('syncDownBtn', '⏳ טוען...', 'loading');
+
+  try {
+    // JSONP — עוקף CORS, עובד על מובייל בלי בעיות redirect
+    let cloudState = await _jsonpFetch(url);
+
+    // תמיכה בפורמט ישן שה-Code.gs החזיר: { _v:N, data: '...' }
+    if (cloudState && typeof cloudState.data === 'string') {
+      try { cloudState = JSON.parse(cloudState.data); } catch(e2) { cloudState = {}; }
+    }
+
+    const hasData = cloudState && typeof cloudState === 'object' &&
+                    (cloudState.currentWeek || cloudState.workouts || cloudState.weeklyProgress);
+    if (!hasData) {
+      showToast('⚠️ לא נמצאו נתונים בענן');
+      return;
+    }
+
+    if (confirm('לטעון נתונים מהענן?\nהנתונים המקומיים יוחלפו בנתוני הענן.')) {
+      _applyCloudState(cloudState);
+      saveState();
+      initTabs();
+      switchToWorkout(currentWorkoutNum || 1);
+      renderHistory();
+      document.getElementById('currentWeekNum').textContent = state.currentWeek;
+      localStorage.setItem(SYNC_LAST_KEY, new Date().toISOString());
+      _updateSyncStatus();
+      showToast('☁️ נטען מהענן בהצלחה!');
+      closeSyncModal();
+    }
+  } catch(e) {
+    showToast('❌ שגיאת טעינה — ' + e.message);
+  } finally {
+    _setSyncBtnState('syncDownBtn', '⬇️ טען מהענן', '');
+  }
+}
+
+// ========================
+// LOCAL BACKUP (Export / Import JSON)
+// ========================
+function exportBackup() {
+  try {
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const d    = new Date();
+    const pad  = (n) => String(n).padStart(2, '0');
+    a.download = 'workout-backup-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '.json';
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    showToast('\u2b07\ufe0f \u05e7\u05d5\u05d1\u05e5 \u05d2\u05d9\u05d1\u05d5\u05d9 \u05e0\u05d5\u05e6\u05e8');
+  } catch (e) {
+    showToast('\u274c \u05e9\u05d2\u05d9\u05d0\u05ea \u05d9\u05d9\u05e6\u05d5\u05d0 \u2014 ' + e.message);
+  }
+}
+
+function importBackup(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const obj = JSON.parse(reader.result);
+      if (!obj || typeof obj !== 'object') throw new Error('\u05e7\u05d5\u05d1\u05e5 \u05dc\u05d0 \u05ea\u05e7\u05d9\u05df');
+      if (!confirm('\u05dc\u05d9\u05d9\u05d1\u05d0 \u05d0\u05ea \u05d4\u05d2\u05d9\u05d1\u05d5\u05d9?\n\u05d4\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05d4\u05de\u05e7\u05d5\u05de\u05d9\u05d9\u05dd \u05d9\u05d5\u05d7\u05dc\u05e4\u05d5.')) { ev.target.value = ''; return; }
+      Object.assign(state, obj);
+      if (obj.ytUrls) ytUrls = state.ytUrls;
+      saveState();
+      initTabs();
+      switchToWorkout(currentWorkoutNum || 1);
+      renderHistory();
+      const wk = document.getElementById('currentWeekNum');
+      if (wk) wk.textContent = state.currentWeek;
+      _updateSyncStatus();
+      showToast('\u2b06\ufe0f \u05d4\u05d2\u05d9\u05d1\u05d5\u05d9 \u05d9\u05d5\u05d1\u05d0 \u05d1\u05d4\u05e6\u05dc\u05d7\u05d4');
+    } catch (e) {
+      showToast('\u274c \u05e9\u05d2\u05d9\u05d0\u05ea \u05d9\u05d9\u05d1\u05d5\u05d0 \u2014 ' + e.message);
+    } finally {
+      ev.target.value = '';
+    }
+  };
+  reader.onerror = () => { showToast('\u274c \u05e7\u05e8\u05d9\u05d0\u05ea \u05d4\u05e7\u05d5\u05d1\u05e5 \u05e0\u05db\u05e9\u05dc\u05d4'); ev.target.value = ''; };
+  reader.readAsText(file);
+}
+
+// ========================
+// INIT
+// ========================
+function init() {
+  const now = new Date();
+  document.getElementById('headerDate').textContent = now.toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('currentWeekNum').textContent = state.currentWeek;
+
+  initTabs();
+  switchToWorkout(1);
+  renderHistory();
+  _updateSyncStatus();
+}
+
+init();
+</script>
+</body>
+</html>
