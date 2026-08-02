@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>💪 תוכנית אימונים - שי</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&family=Secular+One&display=swap');
 
   :root {
     --bg: #0a0a0f;
@@ -564,6 +564,55 @@
   }
 
   svg.ring { transform: rotate(-90deg); }
+
+  /* ==================================================== */
+  /* ======  WARM LIGHT · CORAL RESKIN (overrides)  ====== */
+  /* ==================================================== */
+  :root{
+    --bg:#FBF6EF; --surface:#FFFFFF; --surface2:#F6EFE6; --border:#EBE0D2;
+    --accent-a:#F0625F; --accent-a-glow:rgba(240,98,95,0.30);
+    --accent-b:#16A34A; --accent-b-glow:rgba(22,163,74,0.28);
+    --accent-warn:#F59E0B;
+    --text:#2C2621; --text-dim:#9A8C7D; --text-muted:#C4B7A8;
+    --radius:16px;
+    --check-done:#16A34A; --check-partial:#F59E0B; --check-none:#EF4444;
+  }
+  /* display face for headings + numbers */
+  .header-title,.workout-title,.ring-text,.sync-modal-title,.add-exercise-title{
+    font-family:'Secular One', sans-serif; font-weight:400; }
+  /* warm bright header */
+  .header{ background:linear-gradient(180deg,#FFF3EF 0%, #FBF6EF 100%); }
+  /* HERO current-workout card */
+  .workout-header{ color:#fff; border:none; border-radius:22px;
+    box-shadow:0 16px 34px rgba(236,90,60,.28); }
+  .workout-header.type-a{ background:linear-gradient(135deg,#FF9A7A 0%, #F0625F 55%, #EC5A6E 100%); }
+  .workout-header.type-b{ background:linear-gradient(135deg,#34D399 0%, #10B981 55%, #0D9488 100%);
+    box-shadow:0 16px 34px rgba(16,185,129,.26); }
+  .workout-header .workout-label{ opacity:.92; }
+  .ring-text{ color:#fff; }
+  /* soft warm shadows on cards */
+  .exercise-card,.cardio-card,.add-exercise-section,.progress-table{ box-shadow:0 6px 18px rgba(90,55,20,.06); }
+  .history-item{ box-shadow:0 4px 12px rgba(90,55,20,.05); }
+  .sync-modal-box{ box-shadow:0 30px 70px rgba(40,25,10,.35); }
+  .save-bar{ box-shadow:0 -6px 20px rgba(90,55,20,.06); }
+  /* coral primary button */
+  .btn-primary{ background:linear-gradient(135deg,#FF9A7A 0%, #F0625F 100%);
+    box-shadow:0 8px 20px rgba(240,98,95,.30); }
+  /* recolor former-blue accents -> coral */
+  .tip-coach{ background:rgba(240,98,95,.08); border-right-color:#F0625F; }
+  .tip-coach::before{ color:#E14B57; }
+  .tip-howto li .step-num{ background:rgba(240,98,95,.16); color:#E14B57; }
+  .btn-add{ border-color:rgba(240,98,95,.45); }
+  .btn-add:hover{ background:rgba(240,98,95,.10); }
+  /* amber tip text readable on light bg */
+  .tip-btn{ color:#B45309; }
+  .tip-why strong{ color:#B45309; }
+  /* deeper green success on light */
+  .badge-done{ color:#16A34A; }
+  .imp-up{ color:#16A34A; }
+  /* warm dark toast */
+  .toast{ background:#3A322B; }
+
 </style>
 </head>
 <body>
@@ -1036,8 +1085,8 @@ function renderExercises(num) {
       </div>
       <div class="workout-progress-ring">
         <svg width="64" height="64" class="ring">
-          <circle cx="32" cy="32" r="26" fill="none" stroke="#2a2a3e" stroke-width="6"/>
-          <circle cx="32" cy="32" r="26" fill="none" stroke="${meta.color}" stroke-width="6"
+          <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="6"/>
+          <circle cx="32" cy="32" r="26" fill="none" stroke="#ffffff" stroke-width="6"
             stroke-dasharray="163.4" stroke-dashoffset="163.4" id="ringActive" stroke-linecap="round"/>
         </svg>
         <div class="ring-text" id="ringTextActive">0%</div>
