@@ -613,6 +613,18 @@
   /* warm dark toast */
   .toast{ background:#3A322B; }
 
+
+  /* MuscleWiki demo button */
+  .mw-demo-btn{ display:flex; align-items:center; justify-content:center; gap:6px;
+    background:linear-gradient(135deg,#FF9A7A 0%, #F0625F 100%); color:#fff; text-decoration:none;
+    border-radius:12px; padding:12px; font-weight:700; font-size:0.85rem; margin-bottom:10px;
+    box-shadow:0 6px 16px rgba(240,98,95,.28); cursor:pointer; }
+  .mw-demo-btn:active{ transform:translateY(1px); }
+
+  /* hero legibility on coral */
+  .workout-header .workout-title{ text-shadow:0 2px 12px rgba(130,20,40,.30); }
+  .workout-header .workout-label{ opacity:.95; }
+  .ring-text{ text-shadow:0 1px 6px rgba(130,20,40,.28); }
 </style>
 </head>
 <body>
@@ -1078,7 +1090,7 @@ function renderExercises(num) {
   // Render workout header
   const headerContainer = document.getElementById('activeWorkoutHeader');
   headerContainer.innerHTML = `
-    <div class="workout-header" style="background:linear-gradient(135deg,${meta.color}22 0%,${meta.color}08 100%);border:1px solid ${meta.color}44;margin-bottom:20px;border-radius:var(--radius);padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+    <div class="workout-header" style="background:linear-gradient(135deg,#F5735C 0%,#EC5150 55%,#DA3B60 100%);border:none;margin-bottom:20px;border-radius:22px;padding:22px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 16px 34px rgba(226,74,90,.30)">
       <div>
         <div class="workout-label">אימון ${num} מתוך 10</div>
         <div class="workout-title">${meta.emoji} ${meta.name}</div>
@@ -1202,23 +1214,46 @@ function renderExercises(num) {
       ? `<ol class="tip-howto">${tipData.howto.map((s,i) =>
           `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}</ol>`
       : '';
-    // YouTube editor — user pastes their own link
+    // MuscleWiki demo — link out (videos are copyrighted; we link, not embed)
     const _tk = ex.tipKey || '';
-    const _savedUrl = ytUrls[_tk] || (tipData ? tipData.youtube||'' : '');
-    const _vid = _savedUrl ? extractYtId(_savedUrl) : null;
-    const _thumbHTML = _vid
-      ? `<a class="tip-youtube-thumb" href="https://www.youtube.com/watch?v=${_vid}" target="_blank" rel="noopener">
-           <img src="https://img.youtube.com/vi/${_vid}/hqdefault.jpg"
-                onerror="ytThumbFallback(this,'${_vid}','https://www.youtube.com/watch?v=${_vid}')">
-           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
-         </a>` : '';
+    const MW_SLUG = {
+      incline_press:'dumbbell-incline-bench-press',
+      chest_press_machine:'machine-chest-press',
+      assisted_dips:'machine-assisted-parallel-bar-dips',
+      lateral_raise:'dumbbell-lateral-raise',
+      face_pull:'band-face-pull',
+      arnold_press:'dumbbell-arnold-press',
+      shoulder_press_machine:'cable-overhead-press',
+      dumbbell_shoulder_press:'dumbbell-overhead-press',
+      lat_pulldown:'machine-pulldown',
+      cable_row:'machine-seated-cable-row',
+      single_arm_row:'dumbbell-single-arm-row',
+      overhead_triceps:'dumbbell-overhead-tricep-extension',
+      triceps_pushdown:'cable-rope-pushdown',
+      hammer_curls:'dumbbell-hammer-curl',
+      biceps_curl:'dumbbell-curl',
+      angled_leg_press:'machine-leg-press',
+      leg_press_horizontal:'machine-horizontal-leg-press',
+      leg_extension:'machine-leg-extension',
+      leg_curl:'seated-leg-curl',
+      hanging_knee_raises:'hanging-knee-raises',
+      plank:'plank',
+      abs_crunch:'crunch'
+    };
+    const _savedUrl = ytUrls[_tk] || '';
+    const _defMw = MW_SLUG[_tk] ? 'https://musclewiki.com/exercise/' + MW_SLUG[_tk] : '';
+    const _mwUrl = _savedUrl || _defMw;
+    const _demoBtn = _mwUrl
+      ? `<a class="mw-demo-btn" href="${_mwUrl}" data-default="${_defMw}" target="_blank" rel="noopener">🎬&nbsp; צפה בהדגמה ב-MuscleWiki</a>`
+      : '';
     const youtubeHTML = _tk ? `
+      ${_demoBtn}
       <div class="tip-yt-editor">
         <input type="url" class="tip-yt-input" id="ytinput-${_tk}"
-               placeholder="הדבק קישור YouTube..." value="${_savedUrl}">
-        <button class="tip-yt-save" onclick="saveYtUrl('${_tk}')">▶ הצג</button>
-      </div>
-      <div id="ytpreview-${_tk}">${_thumbHTML}</div>` : '';
+               placeholder="קישור מדויק ל-MuscleWiki (אופציונלי)..." value="${_savedUrl}">
+        <button class="tip-yt-save" onclick="saveYtUrl('${_tk}')">שמור</button>
+      </div>` : ''
+
     const tipPanel = tipData ? `
       <div class="tip-panel">
         <div class="tip-why"><strong>למה זה חשוב?</strong> ${tipData.why}</div>
@@ -1286,25 +1321,18 @@ function saveYtUrl(tipKey) {
   const input = document.getElementById('ytinput-' + tipKey);
   if (!input) return;
   const raw = input.value.trim();
-  const vid = extractYtId(raw);
-  const url = vid ? 'https://www.youtube.com/watch?v=' + vid : '';
-  if (raw && !vid) { showToast('⚠️ קישור לא תקין — נסה שוב'); return; }
-  ytUrls[tipKey] = url;
+  if (raw && !/^https?:\/\/(www\.)?musclewiki\.com\//i.test(raw)) {
+    showToast('⚠️ הדבק קישור של musclewiki.com'); return;
+  }
+  ytUrls[tipKey] = raw;
   state.ytUrls = ytUrls;
   saveState();
-  // Update preview in place
-  const preview = document.getElementById('ytpreview-' + tipKey);
-  if (preview) {
-    preview.innerHTML = vid
-      ? `<a class="tip-youtube-thumb" href="${url}" target="_blank" rel="noopener">
-           <img src="https://img.youtube.com/vi/${vid}/hqdefault.jpg"
-                onerror="ytThumbFallback(this,'${vid}','${url}')">
-           <div class="tip-youtube-play">▶&nbsp; צפה בהדרכה ב-YouTube</div>
-         </a>` : '';
-  }
-  input.value = url;
-  showToast(vid ? '🎬 קישור נשמר!' : '🗑️ קישור נמחק');
+  const editor = input.closest('.tip-yt-editor');
+  const btn = editor && editor.parentElement ? editor.parentElement.querySelector('.mw-demo-btn') : null;
+  if (btn) btn.href = raw || btn.getAttribute('data-default') || btn.href;
+  showToast(raw ? '🎬 קישור MuscleWiki נשמר!' : '↩️ חזרה לברירת המחדל');
 }
+
 
 function ytThumbFallback(img, vid, url) {
   // hqdefault failed → replace entire thumb with text button
