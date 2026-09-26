@@ -657,6 +657,9 @@
     <input type="url" class="sync-url-input" id="syncUrlInput"
       placeholder="https://script.google.com/macros/s/AKfycb.../exec"
       oninput="saveSyncUrl()">
+    <div class="sync-url-label">קוד סנכרון (SYNC_TOKEN — אותו ערך שהגדרת ב-Apps Script):</div>
+    <input type="password" class="sync-url-input" id="syncTokenInput" autocomplete="off"
+      oninput="saveSyncUrl()">
     <div class="sync-actions">
       <button class="btn-primary" id="syncUpBtn" onclick="syncToCloud()">⬆️ שמור לענן</button>
       <button class="btn-secondary" id="syncDownBtn" onclick="loadFromCloud()">⬇️ טען מהענן</button>
@@ -1038,6 +1041,11 @@ let currentWorkoutNum = 1;
 // State
 let state = loadState();
 
+// Values below come from localStorage, a backup file or the cloud sheet, so they are
+// escaped before going into HTML.
+function esc(s){ return String(s==null?'':s).replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c])); }
+function safeUrl(u){ try { const x=new URL(String(u), location.href); return (x.protocol==='https:'||x.protocol==='http:') ? esc(x.href) : '#'; } catch(e){ return '#'; } }
+
 function loadState() {
   try {
     const s = localStorage.getItem('workout_shai_v3');
@@ -1141,7 +1149,7 @@ function renderExercises(num) {
                 <div class="walk-field-row">
                   <input type="number" step="0.5" min="1" max="15" class="duration-input walk-input"
                     placeholder="6.0"
-                    value="${cardioData[ex.id+'_speed'] || ''}"
+                    value="${esc(cardioData[ex.id+'_speed'] || '')}"
                     oninput="setCardio(${num},'${ex.id}','speed',this.value)">
                   <span class="walk-unit">קמ/ש</span>
                 </div>
@@ -1151,7 +1159,7 @@ function renderExercises(num) {
                 <div class="walk-field-row">
                   <input type="number" step="0.5" min="0" max="15" class="duration-input walk-input"
                     placeholder="3.0"
-                    value="${cardioData[ex.id+'_incline'] || ''}"
+                    value="${esc(cardioData[ex.id+'_incline'] || '')}"
                     oninput="setCardio(${num},'${ex.id}','incline',this.value)">
                   <span class="walk-unit">%</span>
                 </div>
@@ -1169,7 +1177,7 @@ function renderExercises(num) {
             <div class="cardio-row">
               <span style="color:var(--text-dim);font-size:0.85rem">משך:</span>
               <input type="number" class="duration-input" placeholder="דק׳"
-                value="${cardioData[ex.id+'_dur'] || ''}"
+                value="${esc(cardioData[ex.id+'_dur'] || '')}"
                 oninput="setCardio(${num},'${ex.id}','dur',this.value)">
               <span style="color:var(--text-dim);font-size:0.85rem">דקות</span>
               <button class="cardio-done-btn ${isDone ? 'done' : ''}"
@@ -1188,12 +1196,12 @@ function renderExercises(num) {
             <div class="set-fields">
               <div class="field-group">
                 <div class="field-label">משקל</div>
-                <input type="text" class="field-input" value="${s.weight}"
+                <input type="text" class="field-input" value="${esc(s.weight)}"
                   oninput="updateSet(${num},'${ex.id}',${i},'weight',this.value)" placeholder="ק״ג">
               </div>
               <div class="field-group">
                 <div class="field-label">חזרות</div>
-                <input type="number" class="field-input" value="${s.reps}"
+                <input type="number" class="field-input" value="${esc(s.reps)}"
                   oninput="updateSet(${num},'${ex.id}',${i},'reps',this.value)" placeholder="חז׳">
               </div>
             </div>
@@ -1244,13 +1252,13 @@ function renderExercises(num) {
     const _defMw = MW_SLUG[_tk] ? 'https://musclewiki.com/exercise/' + MW_SLUG[_tk] : '';
     const _mwUrl = _savedUrl || _defMw;
     const _demoBtn = _mwUrl
-      ? `<a class="mw-demo-btn" href="${_mwUrl}" data-default="${_defMw}" target="_blank" rel="noopener">🎬&nbsp; צפה בהדגמה ב-MuscleWiki</a>`
+      ? `<a class="mw-demo-btn" href="${safeUrl(_mwUrl)}" data-default="${_defMw}" target="_blank" rel="noopener">🎬&nbsp; צפה בהדגמה ב-MuscleWiki</a>`
       : '';
     const youtubeHTML = _tk ? `
       ${_demoBtn}
       <div class="tip-yt-editor">
         <input type="url" class="tip-yt-input" id="ytinput-${_tk}"
-               placeholder="קישור מדויק ל-MuscleWiki (אופציונלי)..." value="${_savedUrl}">
+               placeholder="קישור מדויק ל-MuscleWiki (אופציונלי)..." value="${esc(_savedUrl)}">
         <button class="tip-yt-save" onclick="saveYtUrl('${_tk}')">שמור</button>
       </div>` : ''
 
@@ -1281,7 +1289,7 @@ function renderExercises(num) {
         ${setsHTML}
         <div class="notes-area">
           <textarea class="notes-input" placeholder="הערות... (כאבים, קשיים, תחושות)"
-            oninput="updateNotes(${num},'${ex.id}',this.value)">${(workout.notes||{})[ex.id]||''}</textarea>
+            oninput="updateNotes(${num},'${ex.id}',this.value)">${esc((workout.notes||{})[ex.id]||'')}</textarea>
         </div>
       </div>`;
     container.appendChild(card);
@@ -1521,9 +1529,9 @@ function renderProgress() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${ex.emoji} ${ex.name}</td>
-      <td><input type="text" class="progress-input-sm" value="${prog.weight}" 
+      <td><input type="text" class="progress-input-sm" value="${esc(prog.weight)}" 
         oninput="updateProgress(${wk},'${ex.id}','weight',this.value)" placeholder="ק״ג"></td>
-      <td><input type="text" class="progress-input-sm" value="${prog.reps}"
+      <td><input type="text" class="progress-input-sm" value="${esc(prog.reps)}"
         oninput="updateProgress(${wk},'${ex.id}','reps',this.value)" placeholder="חז׳"></td>
       <td>${improvBadge}</td>`;
     tbody.appendChild(tr);
@@ -1555,12 +1563,12 @@ function renderHistory() {
     const wLabel = h.label || `אימון ${h.type} – ${meta.name}`;
     return `<div class="history-item">
       <div>
-        <span style="color:${typeColor};font-weight:700">${wLabel}</span>
+        <span style="color:${typeColor};font-weight:700">${esc(wLabel)}</span>
         <div class="history-date">${dateStr}</div>
       </div>
       <div style="text-align:left">
         <div style="font-weight:700;color:${pct===100?'#22c55e':'#f59e0b'}">${pct}%</div>
-        <div style="font-size:0.75rem;color:var(--text-dim)">${h.doneSets}/${h.totalSets} סטים</div>
+        <div style="font-size:0.75rem;color:var(--text-dim)">${esc(h.doneSets)}/${esc(h.totalSets)} סטים</div>
       </div>
     </div>`;
   }).join('');
@@ -1641,18 +1649,23 @@ function showToast(msg) {
 // ========================
 const SYNC_URL_KEY  = 'workout_sync_url_v1';
 const SYNC_LAST_KEY = 'workout_sync_last_v1';
+const SYNC_TOKEN_KEY = 'workout_sync_token_v1';
 
 function getSyncUrl()  { return localStorage.getItem(SYNC_URL_KEY)  || ''; }
 function getLastSync() { return localStorage.getItem(SYNC_LAST_KEY) || ''; }
+function getSyncToken() { return localStorage.getItem(SYNC_TOKEN_KEY) || ''; }
 
 function saveSyncUrl() {
   const url = document.getElementById('syncUrlInput').value.trim();
   localStorage.setItem(SYNC_URL_KEY, url);
+  const tokenEl = document.getElementById('syncTokenInput');
+  if (tokenEl) localStorage.setItem(SYNC_TOKEN_KEY, tokenEl.value.trim());
 }
 
 function showSyncModal() {
   document.getElementById('syncModal').classList.add('open');
   document.getElementById('syncUrlInput').value = getSyncUrl();
+  document.getElementById('syncTokenInput').value = getSyncToken();
   _updateSyncStatus();
 }
 
@@ -1709,6 +1722,7 @@ async function syncToCloud() {
   saveSyncUrl();
   const url = getSyncUrl();
   if (!url) { showToast('⚠️ הכנס כתובת Apps Script'); return; }
+  if (!getSyncToken()) { showToast('⚠️ הכנס את קוד הסנכרון (SYNC_TOKEN)'); return; }
 
   _setSyncBtnState('syncUpBtn', '⏳ שומר...', 'loading');
   document.getElementById('syncBtn').classList.add('syncing');
@@ -1725,7 +1739,7 @@ async function syncToCloud() {
 
     for (let i = 0; i < n; i++) {
       _setSyncBtnState('syncUpBtn', `⏳ ${i + 1}/${n}...`, 'loading');
-      const chunkUrl = url + '?action=chunk&i=' + i + '&n=' + n + '&d=' + chunks[i];
+      const chunkUrl = url + '?action=chunk&i=' + i + '&n=' + n + '&token=' + encodeURIComponent(getSyncToken()) + '&d=' + chunks[i];
       const result   = await _jsonpFetch(chunkUrl, 30000);
       const ok = result && (result.status === 'chunk_ok' || result.status === 'ok');
       if (!ok) {
@@ -1789,12 +1803,14 @@ async function loadFromCloud() {
   saveSyncUrl();
   const url = getSyncUrl();
   if (!url) { showToast('⚠️ הכנס כתובת Apps Script'); return; }
+  if (!getSyncToken()) { showToast('⚠️ הכנס את קוד הסנכרון (SYNC_TOKEN)'); return; }
 
   _setSyncBtnState('syncDownBtn', '⏳ טוען...', 'loading');
 
   try {
     // JSONP — עוקף CORS, עובד על מובייל בלי בעיות redirect
-    let cloudState = await _jsonpFetch(url);
+    let cloudState = await _jsonpFetch(url + '?token=' + encodeURIComponent(getSyncToken()));
+    if (cloudState && cloudState.status === 'error') throw new Error(cloudState.msg || 'error');
 
     // תמיכה בפורמט ישן שה-Code.gs החזיר: { _v:N, data: '...' }
     if (cloudState && typeof cloudState.data === 'string') {

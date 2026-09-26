@@ -21,6 +21,10 @@
  *       - Who has access:  Anyone
  *     Deploy → אשר הרשאות → העתק את כתובת ה-/exec.
  *  6. הדבק את הכתובת באפליקציה: כפתור "☁️ סנכרן" → שדה הכתובת.
+ *  7. אבטחה (חובה): Project Settings → Script Properties → Add property
+ *       Property: SYNC_TOKEN   Value: מחרוזת אקראית ארוכה (30+ תווים)
+ *     והדבק את אותו ערך באפליקציה בשדה "קוד סנכרון".
+ *     בלי SYNC_TOKEN השרת מסרב לכל בקשה — כי הכתובת פתוחה ל-Anyone.
  *
  *  שים לב: בכל שינוי בקוד צריך Deploy → Manage deployments →
  *  עריכה → Version: New version, אחרת האפליקציה תראה קוד ישן.
@@ -41,9 +45,19 @@ function _sheet() {
   return sh;
 }
 
+/** בודק שהבקשה נושאת את הטוקן הסודי (Script Properties → SYNC_TOKEN) */
+function _authorized(p) {
+  var expected = PropertiesService.getScriptProperties().getProperty('SYNC_TOKEN');
+  if (!expected || !p.token || p.token.length !== expected.length) return false;
+  var diff = 0;
+  for (var k = 0; k < expected.length; k++) diff |= expected.charCodeAt(k) ^ p.token.charCodeAt(k);
+  return diff === 0;
+}
+
 /** עוטף אובייקט כתשובת JSONP (JavaScript) שהדפדפן יריץ */
 function _jsonp(callback, obj) {
-  var cb = callback || 'callback';
+  // רק שם פונקציה תקין — אחרת כל אחד יכול להזריק JavaScript לתשובה
+  var cb = /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(callback || '') ? callback : 'callback';
   var body = cb + '(' + JSON.stringify(obj) + ');';
   return ContentService
     .createTextOutput(body)
@@ -55,6 +69,9 @@ function doGet(e) {
   var p  = (e && e.parameter) || {};
   var cb = p.callback || 'callback';
   try {
+    if (!_authorized(p)) {
+      return _jsonp(cb, { status: 'error', msg: 'unauthorized (bad or missing SYNC_TOKEN)' });
+    }
     if (p.action === 'chunk') {
       return _handleChunk(p, cb);
     }
@@ -66,7 +83,7 @@ function doGet(e) {
     }
     return _jsonp(cb, obj);
   } catch (err) {
-    return _jsonp(cb, { status: 'error', msg: String(err) });
+    return _jsonp(cb, { status: 'error', msg: 'server error' });
   }
 }
 
